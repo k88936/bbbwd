@@ -1,0 +1,98 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org' }
+    gradlePluginPortal()
+    mavenLocal()
+    google()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+  }
+  dependencies {
+    classpath "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+
+  }
+}
+
+// Store the parameters you want to pass the texturePacker here...
+project.ext.texturePacker = [ "assets_gen", "assets/packed", "assets.atlas" ]
+
+// Import the texture packer
+import com.badlogic.gdx.tools.texturepacker.TexturePacker
+
+// Add a new task that packs the textures for you
+tasks.register('texturePacker') {
+  doLast {
+    if (project.ext.has('texturePacker')) {
+      logger.info "Calling TexturePacker: " + texturePacker
+      TexturePacker.process(texturePacker[0], texturePacker[1], texturePacker[2])
+    }
+  }
+}
+
+allprojects {
+  apply plugin: 'eclipse'
+  apply plugin: 'idea'
+
+  // This allows you to "Build and run using IntelliJ IDEA", an option in IDEA's Settings.
+  idea {
+    module {
+      outputDir file('build/classes/java/main')
+      testOutputDir file('build/classes/java/test')
+    }
+  }
+}
+
+configure(subprojects) {
+  apply plugin: 'java-library'
+  sourceCompatibility = 17
+
+  // From https://lyze.dev/2021/04/29/libGDX-Internal-Assets-List/
+  // The article can be helpful when using assets.txt in your project.
+  tasks.register('generateAssetList') {
+    inputs.dir("${project.rootDir}/assets/")
+    // projectFolder/assets
+    File assetsFolder = new File("${project.rootDir}/assets/")
+    // projectFolder/assets/assets.txt
+    File assetsFile = new File(assetsFolder, "assets.txt")
+    // delete that file in case we've already created it
+    assetsFile.delete()
+
+    // iterate through all files inside that folder
+    // convert it to a relative path
+    // and append it to the file assets.txt
+    fileTree(assetsFolder).collect { assetsFolder.relativePath(it) }.sort().each {
+      assetsFile.append(it + "\n")
+    }
+  }
+  processResources.dependsOn 'generateAssetList'
+
+  compileJava {
+    options.incremental = true
+  }
+}
+
+subprojects {
+  version = '$projectVersion'
+  ext.appName = 'BubbleWorld'
+  repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org' }
+    // You may want to remove the following line if you have errors downloading dependencies.
+    mavenLocal()
+    maven {
+      url = "https://maven.pkg.github.com/k88936/gdx-box2d"
+      credentials {
+        username = 'k88936'
+        password = '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'
+      }
+    }
+    // You may want to remove the following line if you have errors downloading dependencies.
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://jitpack.io' }
+
+  }
+}
+
+eclipse.project.name = 'BubbleWorld' + '-parent'
