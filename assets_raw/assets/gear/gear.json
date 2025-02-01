@@ -1,0 +1,11 @@
+{
+  "name": "gear",
+  "width": 128,
+  "height": 128,
+  "layers": [
+    {
+      "src": "gear.png",
+      "texture": "wood2.png"
+    }
+  ]
+}
