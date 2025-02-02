@@ -12,22 +12,17 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class Renderer implements Disposable {
+public class Renderer {
     private final SpriteBatch batch = new SpriteBatch();
-    private final Camera camera = new OrthographicCamera(10, 10);
+    public final Camera camera = new OrthographicCamera(10, 10);
     public final Viewport viewport = new ExtendViewport(20, 20, camera);
     private final BitmapFont font = new BitmapFont();
 //    ComponentMapper<VisibleCM> visibleCMComponentMapper;
 
-    Texture cursor = new Texture("curser.png");
-    TextureRegion mouseRegion = new TextureRegion(cursor);
-    Texture ok = new Texture("ok.png");
-    TextureRegion okRegion = new TextureRegion(ok);
     IntArray visibleEntities = new IntArray();
 
     public void render() {
@@ -42,7 +37,7 @@ public class Renderer implements Disposable {
         float halfWidth = viewport.getWorldWidth() / 2.0f;
         float halfHeight = viewport.getWorldHeight() / 2.0f;
         visibleEntities.clear();
-        Vars.ecs.getSystem(PhysicsSystem.class).markVisible(cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight,visibleEntities);
+        Vars.ecs.getSystem(PhysicsSystem.class).collect(cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight, visibleEntities);
 
         viewport.apply();
         // render
@@ -54,7 +49,6 @@ public class Renderer implements Disposable {
             process(visibleEntities.get(i));
         }
         batch.end();
-        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
 
 
     }
@@ -66,14 +60,8 @@ public class Renderer implements Disposable {
 //        visibleCMComponentMapper.set(entity, false);
     }
 
-    @Override
-    public void dispose() {
-        batch.dispose();
-        font.dispose();
-    }
 
-    public  interface RenderLogic {
+    public interface RenderLogic {
         void render(Affine2 tfm, SpriteBatch bth);
-
     }
 }

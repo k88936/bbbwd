@@ -2,7 +2,6 @@ package bbbwd.bubbleworld.game.systems;
 
 import bbbwd.bubbleworld.game.components.BoxCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
-import bbbwd.bubbleworld.game.components.VisibleCM;
 import com.artemis.BaseEntitySystem;
 import com.artemis.ComponentMapper;
 import com.artemis.annotations.All;
@@ -42,20 +41,25 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         taskSystem.afterStep();
         ThreadLocal<b2Transform> cache = ThreadLocal.withInitial(b2Transform::new);
         Arrays.stream(subscription.getEntities().getData(), 0, subscription.getEntities().size()).parallel().forEach(entityId -> {
+            BoxCM physics = boxMapper.get(entityId);
+            if(physics.isStatic) return;
+            Box2dPlus.b2Body_GetTransform(physics.bodyId, cache.get());
+            TransformCM transformCM = transformMapper.get(entityId);
+            Box2dPlus.b2ToGDX(cache.get(), transformCM.transform);
         });
     }
 
-    public void markVisible(float lx, float ly, float ux, float uy, IntArray entities) {
-        Box2dPlus.b2WorldOverlapAABB(getWorldId(),  lx, ly,ux,uy, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
-            final b2Transform cache = new b2Transform();
+    public void collect(float lx, float ly, float ux, float uy, IntArray entities) {
+        Box2dPlus.b2WorldOverlapAABB(getWorldId(), lx, ly, ux, uy, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
+//            final b2Transform cache = new b2Transform();
 
             @Override
             public boolean b2OverlapResultFcn_call(long entity) {
                 int entityId = (int) entity;
-                BoxCM physics = boxMapper.get(entityId);
-                Box2dPlus.b2Body_GetTransform(physics.bodyId, cache);
-                TransformCM transformCM = transformMapper.get(entityId);
-                Box2dPlus.b2ToGDX(cache, transformCM.transform);
+//                BoxCM physics = boxMapper.get(entityId);
+//                Box2dPlus.b2Body_GetTransform(physics.bodyId, cache);
+//                TransformCM transformCM = transformMapper.get(entityId);
+//                Box2dPlus.b2ToGDX(cache, transformCM.transform);
                 entities.add(entityId);
 //                System.out.println(transformCM.transform);
                 return true;
@@ -63,7 +67,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         }));
     }
 
-   public void createBody(int entity) {
+    public void createBody(int entity) {
         //todo can inline to a jnicall
         TransformCM transformCM = transformMapper.get(entity);
         BoxCM boxCM = boxMapper.get(entity);
@@ -74,9 +78,10 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         b2Polygon b2Polygon = Box2d.b2MakeSquare(boxCM.size);
         b2ShapeDef shape = Box2d.b2DefaultShapeDef();
         boxCM.bodyId = Box2d.b2CreateBody(worldId, def.asPointer());
-        Box2dPlus.b2Body_SetRawUserData(boxCM.bodyId, entity);
+        Box2dPlus.b2BodySetRawUserData(boxCM.bodyId, entity);
         Box2d.b2CreatePolygonShape(boxCM.bodyId, shape.asPointer(), b2Polygon.asPointer());
     }
+//    public void createBody()
 
 
     @Override

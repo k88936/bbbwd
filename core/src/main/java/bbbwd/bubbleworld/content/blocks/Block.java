@@ -1,10 +1,10 @@
 package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.core.Renderer;
 import bbbwd.bubbleworld.game.components.BoxCM;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
-import bbbwd.bubbleworld.core.Renderer;
 import com.badlogic.gdx.math.MathUtils;
 
 public abstract class Block {
@@ -17,6 +17,7 @@ public abstract class Block {
 //    );
     public float size;
     public Renderer.RenderLogic renderLogic;
+    public ConnectFilter connectFilter;
 
 
     public final int create() {
@@ -27,6 +28,7 @@ public abstract class Block {
         BoxCM boxCM = Vars.ecs.getMapper(BoxCM.class).create(entity);
         assert (MathUtils.isEqual(size * 4, MathUtils.round(size * 4)));
         boxCM.size = size;
+        boxCM.connectFilter = connectFilter;
 //        init(
 //            drawableCM,
 //            boxCM
@@ -34,4 +36,15 @@ public abstract class Block {
         return entity;
     }
 
+    public interface ConnectFilter {
+
+        /**
+         * tips: less strict to tolerate errors
+         * @param rx newBlock relative to oldBlock
+         * @param ry newBlock relative to oldBlock
+         * @return ture to pass(CANNOT connect)
+         */
+        boolean filter(Block newBlock, float rx, float ry);
+    }
 }
+
