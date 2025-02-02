@@ -10,4 +10,10 @@ dependencies {
   if (enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
+  testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
+  testImplementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_box2d_Version:natives-desktop"
+}
+test {
+  useJUnitPlatform()
 }
