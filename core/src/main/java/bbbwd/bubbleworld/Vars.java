@@ -14,7 +14,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.util.logging.*;
 
 public class Vars {
-    public static final float GRID_SIZE = 0.25f;
+    public static final float GRID_SIZE = 0.125f;
     public static final Logger logger = Logger.getGlobal();
     public static World ecs;
     public static Control control;
@@ -56,9 +56,8 @@ public class Vars {
             });
             logger.addHandler(handler);
             OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-            logger.info("OS: " + osBean.getName() + " " + osBean.getVersion() + " " + osBean.getArch());
             Runtime runtime = Runtime.getRuntime();
-            logger.info("CPU: " + runtime.availableProcessors());
+            logger.info("OS: " + osBean.getName() + " " + osBean.getVersion() + " " + osBean.getArch() + " CPU: " + runtime.availableProcessors());
             logger.info("MaxMemory: " + runtime.maxMemory() / 1024 / 1024 + "MB" +
                 " TotalMemory: " + runtime.totalMemory() / 1024 / 1024 + "MB" +
                 " FreeMemory: " + runtime.freeMemory() / 1024 / 1024 + "MB");

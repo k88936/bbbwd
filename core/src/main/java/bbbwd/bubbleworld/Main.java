@@ -28,12 +28,6 @@ public class Main extends ApplicationAdapter {
         Vars.renderer = new Renderer();
         Vars.control.startGame();
 
-        //for test
-        Affine2 tfm = new Affine2();
-        Vars.control.buildBlock(tfm, Blocks.testBlock);
-        tfm.translate(1f, 1);
-        Vars.control.buildBlock(tfm, Blocks.testBlock_OnlyConnectX);
-        System.out.println(Vars.control.inputHandler.seekPlaceForBuild(new Vector2(0, 1), Blocks.testBlock_OnlyConnectX).connections());
 
 
     }

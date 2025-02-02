@@ -67,7 +67,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         }));
     }
 
-    public void createBody(int entity) {
+    public void createBox(int entity) {
         //todo can inline to a jnicall
         TransformCM transformCM = transformMapper.get(entity);
         BoxCM boxCM = boxMapper.get(entity);
@@ -80,6 +80,13 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         boxCM.bodyId = Box2d.b2CreateBody(worldId, def.asPointer());
         Box2dPlus.b2BodySetRawUserData(boxCM.bodyId, entity);
         Box2d.b2CreatePolygonShape(boxCM.bodyId, shape.asPointer(), b2Polygon.asPointer());
+    }
+    public void addWeldJoint(int entityA, int entityB) {
+        BoxCM boxA = boxMapper.get(entityA);
+        BoxCM boxB = boxMapper.get(entityB);
+
+        b2WeldJointDef def = Box2d.b2DefaultWeldJointDef();
+        Box2d.b2CreateWeldJoint(worldId, def.asPointer());
     }
 //    public void createBody()
 
