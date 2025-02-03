@@ -29,11 +29,12 @@ public class Control {
         assert isGameRunning;
         int entity = newBlock.create();
         Vars.ecs.getMapper(TransformCM.class).get(entity).transform.set(transform);
-        if (newBlock instanceof ComposedBlock) {
-            IntArray children = Vars.ecs.getMapper(ComposedCM.class).get(entity).children;
-            for (int i = 0; i < children.size; i++) {
-                Vars.ecs.getSystem(PhysicsSystem.class).createBox(children.get(i));
-            }
+        if (newBlock instanceof ComposedBlock composedBlock) {
+            int childA = Vars.ecs.getMapper(ComposedCM.class).get(entity).childA;
+            int childB = Vars.ecs.getMapper(ComposedCM.class).get(entity).childB;
+            Vars.ecs.getSystem(PhysicsSystem.class).createBox(childA) ;
+            Vars.ecs.getSystem(PhysicsSystem.class).createBox(childB);
+            composedBlock.compose(childA, childB);
         } else {
             Vars.ecs.getSystem(PhysicsSystem.class).createBox(entity);
         }

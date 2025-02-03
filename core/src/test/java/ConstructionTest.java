@@ -32,9 +32,7 @@ public class ConstructionTest {
     public void testConnectAnchorCompute() {
         TestUtils.init();
         TestUtils.setBlock(0, 0, 0, Blocks.testBlock);
-
         InputHandler.seekResult seekResult = Vars.control.inputHandler.seekPlaceForBuild(new Vector2(1, 2*Vars.GRID_SIZE), Blocks.testBlock, 0);
-
         assert seekResult.connections().getFirst().anchorNewBlock().epsilonEquals(-0.5f,-0.25f);
         assert seekResult.connections().getFirst().anchorOldBlock().epsilonEquals(0.5f,0.25f);
         assert MathUtils.isEqual(seekResult.connections().getFirst().relativeAngle()[0],5.81f,0.1f);
