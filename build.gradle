@@ -45,7 +45,6 @@ allprojects {
 
 configure(subprojects) {
   apply plugin: 'java-library'
-  sourceCompatibility = 17
 
   // From https://lyze.dev/2021/04/29/libGDX-Internal-Assets-List/
   // The article can be helpful when using assets.txt in your project.
@@ -84,7 +83,7 @@ subprojects {
       url = "https://maven.pkg.github.com/k88936/gdx-box2d"
       credentials {
         username = 'k88936'
-        password = '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'
+        password = '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'
       }
     }
     // You may want to remove the following line if you have errors downloading dependencies.
