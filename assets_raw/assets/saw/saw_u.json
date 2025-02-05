@@ -1,0 +1,15 @@
+{
+  "name": "saw_u",
+  "width": 64,
+  "height": 64,
+  "layers": [
+    {
+      "src": "saw_u2.png",
+      "texture": "iron_3.png"
+    },
+    {
+      "src": "saw_u1.png",
+      "texture": "iron_8.png"
+    }
+  ]
+}

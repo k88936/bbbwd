@@ -33,7 +33,7 @@ public class InputHandler {
         float extend = thisSize * 2 * 1.5f;
 
 
-        Box2dPlus.b2WorldOverlapAABB(worldId, position.x - extend, position.y - extend, position.x + extend, position.y + extend, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(worldId, position.x - extend, position.y - extend, position.x + extend, position.y + extend, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
             final b2Transform cache = new b2Transform();
 
             @Override
