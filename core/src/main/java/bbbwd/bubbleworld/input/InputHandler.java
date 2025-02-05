@@ -35,7 +35,7 @@ public class InputHandler {
 
 
         //seek possible
-        Box2dPlus.b2WorldOverlapAABB(worldId, position.x - extend, position.y - extend, position.x + extend, position.y + extend, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(worldId, position.x - extend, position.y - extend, position.x + extend, position.y + extend, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
             final b2Transform cache = new b2Transform();
 
             @Override
@@ -93,7 +93,7 @@ public class InputHandler {
 
         //determine the best candidate and compute other connections
         nearBy.sort((o1, o2) -> Float.compare(o1.prefer, o2.prefer));
-        candidate first = nearBy.getFirst();
+        candidate first = nearBy.get(0);
         Affine2 transform = new Affine2(first.tfm);
         for (int i = 0; i < rot % 4; i++) {
             Utils.rotateHalfPi(transform);

@@ -50,7 +50,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     }
 
     public void collect(float lx, float ly, float ux, float uy, IntArray entities) {
-        Box2dPlus.b2WorldOverlapAABB(getWorldId(), lx, ly, ux, uy, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(getWorldId(), lx, ly, ux, uy, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
 //            final b2Transform cache = new b2Transform();
 
             @Override
