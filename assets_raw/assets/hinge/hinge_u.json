@@ -1,0 +1,16 @@
+{
+  "name": "hinge_u",
+  "width": 64,
+  "height": 64,
+  "layers": [
+    {
+      "src": "hinge_u2.png",
+      "texture": "frame_1.png"
+    },
+
+    {
+      "src": "hinge_u1.png",
+      "texture": "iron_4.png"
+    }
+  ]
+}

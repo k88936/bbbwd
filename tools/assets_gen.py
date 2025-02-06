@@ -10,8 +10,8 @@ assets_output = "assets_gen"
 assets_input = "assets_raw/assets"
 copy_dir_structure = False
 
-shutil.rmtree(assets_output, ignore_errors=True)
-os.makedirs(assets_output, exist_ok=True)
+# shutil.rmtree(assets_output, ignore_errors=True)
+# os.makedirs(assets_output, exist_ok=True)
 for root, dirs, files in os.walk(assets_input):
     for file_name in files:
         file_path = os.path.join(root, file_name)
@@ -24,7 +24,9 @@ for root, dirs, files in os.walk(assets_input):
                 canvas = Image.new("RGBA", (config['width'], config['height']), (255, 255, 255, 0))
                 for layer in config["layers"]:
                     src = Image.open(os.path.join(root, layer["src"]))
+                    src=src.convert("RGBA")
                     texture = Image.open(os.path.join("assets_raw/textures", layer["texture"]))
+                    texture=texture.convert("RGBA")
                     for i in range(0, config['width']):
                         for j in range(0, config['height']):
                             r, g, b, a = src.getpixel((i, j))
