@@ -45,8 +45,8 @@ for root, dirs, files in os.walk(assets_input):
                             #  int(b * rate + b1 * (1 - rate)), int(a * rate + a1 * (1 - rate)))
                             # )
 
-                if os.path.exists(os.path.join(root, name + ".normal.png")):
-                    height=Image.open(os.path.join(root, name + ".normal.png"))
+                if os.path.exists(os.path.join(root, name + ".height.png")):
+                    height=Image.open(os.path.join(root, name + ".height.png"))
                     height=height.convert("RGBA")
                     ix=[]
                     iy=[]
