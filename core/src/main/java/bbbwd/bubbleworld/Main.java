@@ -28,10 +28,12 @@ public class Main extends ApplicationAdapter {
         Vars.control.startGame();
         Vars.renderer = new Renderer();
 
-        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 0), Blocks.testBlock);
-        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 2), Blocks.testBlock);
-        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 4), Blocks.testBlock);
-        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 6), Blocks.testBlock);
+        float xb=4;
+        float yb=4;
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(xb-1, yb-1), Blocks.testBlock);
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(xb-1, yb+1), Blocks.testBlock);
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(xb+1, yb-1), Blocks.testBlock);
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(xb+1, yb+1), Blocks.testBlock);
 
     }
 

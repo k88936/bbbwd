@@ -14,10 +14,10 @@ buildscript {
   }
 }
 
-tasks.register('genAssets', Exec) {
-  workingDir  rootDir
-  commandLine 'python','tools/assets_gen.py'
-}
+//tasks.register('genAssets', Exec) {
+//  workingDir
+//  commandLine 'python','tools/assets_gen.py'
+//}
 // Store the parameters you want to pass the texturePacker here...
 project.ext.texturePacker = [ "assets_gen", "assets/packed", "assets.atlas" ]
 

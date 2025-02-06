@@ -1,7 +1,7 @@
 {
   "name": "hinge_l",
   "width": 64,
-  "height": 64,
+  "height": 64 ,
   "layers": [
     {
       "src": "hinge_l2.png",
