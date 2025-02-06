@@ -28,7 +28,6 @@ dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
   implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_box2d_Version:natives-desktop"
-  implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   implementation project(':core')
 
   if (enableGraalNative == 'true') {

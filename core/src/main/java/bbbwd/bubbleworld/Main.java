@@ -25,10 +25,13 @@ public class Main extends ApplicationAdapter {
         Vars.contentLoader = new ContentLoader();
         Vars.contentLoader.load();
         Vars.control = new Control();
-        Vars.renderer = new Renderer();
         Vars.control.startGame();
+        Vars.renderer = new Renderer();
 
-
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 0), Blocks.testBlock);
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 2), Blocks.testBlock);
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 4), Blocks.testBlock);
+        Vars.control.buildBlock(new Affine2().rotate(0).translate(0, 6), Blocks.testBlock);
 
     }
 
@@ -36,7 +39,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
 //        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
+        ScreenUtils.clear(1f, 1f, 1f, 1f);
         if (Vars.control.isGameRunning) {
             Vars.ecs.process();
             Vars.renderer.render();
@@ -46,5 +49,10 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         super.dispose();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+       Vars.renderer.resize(width, height);
     }
 }
