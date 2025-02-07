@@ -19,8 +19,12 @@ public abstract class Block {
     public Renderer.RenderLogic renderLogic;
     public ConnectFilter connectFilter;
 
+    Block() {
+        config();
+    }
 
-    public final int create() {
+    abstract void config();
+    public int create() {
         int entity = Vars.ecs.create();
         TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).create(entity);
         DrawableCM drawableCM = Vars.ecs.getMapper(DrawableCM.class).create(entity);
@@ -39,7 +43,6 @@ public abstract class Block {
     public interface ConnectFilter {
 
         /**
-         * tips: less strict to tolerate errors
          * @param rx newBlock relative to oldBlock
          * @param ry newBlock relative to oldBlock
          * @return ture to pass(CANNOT connect)

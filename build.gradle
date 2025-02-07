@@ -14,6 +14,10 @@ buildscript {
   }
 }
 
+//tasks.register('genAssets', Exec) {
+//  workingDir
+//  commandLine 'python','tools/assets_gen.py'
+//}
 // Store the parameters you want to pass the texturePacker here...
 project.ext.texturePacker = [ "assets_gen", "assets/packed", "assets.atlas" ]
 
@@ -45,6 +49,7 @@ allprojects {
 
 configure(subprojects) {
   apply plugin: 'java-library'
+  sourceCompatibility = 21
 
   // From https://lyze.dev/2021/04/29/libGDX-Internal-Assets-List/
   // The article can be helpful when using assets.txt in your project.
@@ -77,20 +82,25 @@ subprojects {
   repositories {
     mavenCentral()
     maven { url 'https://s01.oss.sonatype.org' }
-    // You may want to remove the following line if you have errors downloading dependencies.
-    mavenLocal()
+    maven {
+      url = "https://maven.pkg.github.com/k88936/box2dlights"
+      credentials {
+        username = 'k88936'
+        password = 'ghp_' + 'wFUC3mQHU8OqQtjcjfRWwwcpC4wiR54cd3FV'
+      }
+    }
     maven {
       url = "https://maven.pkg.github.com/k88936/gdx-box2d"
       credentials {
         username = 'k88936'
-        password = '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'
+        password = 'ghp_' + 'wFUC3mQHU8OqQtjcjfRWwwcpC4wiR54cd3FV'
       }
     }
-    // You may want to remove the following line if you have errors downloading dependencies.
+
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://jitpack.io' }
-
+    mavenLocal()
   }
 }
 

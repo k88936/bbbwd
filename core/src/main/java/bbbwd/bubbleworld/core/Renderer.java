@@ -4,33 +4,103 @@ import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
+import box2dLight.Light;
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
+import box2dLight.RayHandlerOptions;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import shaders.LightShaderWithNormal;
+import shaders.NormalShader;
 
 public class Renderer {
-    private final SpriteBatch batch = new SpriteBatch();
-    public final Camera camera = new OrthographicCamera(10, 10);
-    public final Viewport viewport = new ExtendViewport(20, 20, camera);
-    private final BitmapFont font = new BitmapFont();
-//    ComponentMapper<VisibleCM> visibleCMComponentMapper;
-
     IntArray visibleEntities = new IntArray();
 
+    OrthographicCamera camera;
+    Viewport viewport;
+    SpriteBatch batch;
+    BitmapFont font;
+    /** our box2D world **/
+    /** our ground box **/
+    RayHandler rayHandler;
+    Texture bg, bgN;
+    TextureRegion objectReg, objectRegN;
+    FrameBuffer normalFbo;
+    ShaderProgram lightShader;
+    ShaderProgram normalShader;
+    PointLight pointLight;
+    Texture ttttt;
+    float t = 0;
+    public Renderer() {
+        bg = new Texture("bg-deferred.png");
+        bgN = new Texture("bg-deferred-n.png");
+        ttttt = new Texture("object-deferred-n.png");
+
+        MathUtils.random.setSeed(Long.MIN_VALUE);
+
+        camera = new OrthographicCamera();
+        camera.update();
+
+        viewport = new ExtendViewport(15, 15, camera);
+
+        batch = new SpriteBatch();
+        font = new BitmapFont();
+        font.setColor(Color.RED);
+
+
+        /** BOX2D LIGHT STUFF BEGIN */
+        normalShader = NormalShader.createNormalShader();
+
+        lightShader = LightShaderWithNormal.createLightShader();
+        RayHandlerOptions options = new RayHandlerOptions();
+        options.setDiffuse(true);
+
+        options.setGammaCorrection(true);
+        rayHandler = new RayHandler(Vars.ecs.getSystem(PhysicsSystem.class).getWorldId(), Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), options) {
+            @Override
+            protected void updateLightShaderPerLight(Light light) {
+                // light position must be normalized
+                Vector2 project = viewport.project(light.getPosition().cpy());
+//                Logger.getGlobal().info(" xy:"+project);
+//                lightShader.setUniformf("u_lightpos", project.x, project.y, 0.05f);
+//                lightShader.setUniformf("u_lightpos", 0.5f, 0.5f, 0.05f);
+//                lightShader.setUniformf("u_lightpos", 0f, 0f, 0.05f);
+                lightShader.setUniformf("u_lightpos", project.x/viewport.getScreenWidth(), project.y/viewport.getScreenHeight(), 0.05f);
+//                System.out.println("x: "+project.x/viewport.getScreenWidth());
+//                System.out.println("y: "+project.y/viewport.getScreenHeight());
+//                System.out.println("w: "+viewport.getScreenWidth());
+//                System.out.println("h: "+viewport.getScreenHeight());
+                lightShader.setUniformf("u_intensity", 5);
+            }
+        };
+        rayHandler.setLightShader(lightShader);
+        rayHandler.setAmbientLight(0.4f, 0.4f, 0.4f, 0.5f);
+        rayHandler.setBlurNum(0);
+
+        /** BOX2D LIGHT STUFF END */
+        camera.position.x=3;
+        camera.position.y=4;
+
+
+        pointLight = new PointLight(rayHandler, 128,Color.WHITE,4,4,4);
+    }
+
     public void render() {
-
-        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-//        System.out.println(viewport.getWorldHeight());
-//        System.out.println(viewport.getWorldWidth());
+//        pointLight.setPosition(pointLight.getPosition().rotateDeg(0.5f));
 
         float cameraX = camera.position.x;
         float cameraY = camera.position.y;
@@ -38,30 +108,97 @@ public class Renderer {
         float halfHeight = viewport.getWorldHeight() / 2.0f;
         visibleEntities.clear();
         Vars.ecs.getSystem(PhysicsSystem.class).collect(cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight, visibleEntities);
-
-        viewport.apply();
-        // render
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
-        // render all entities
         int bound = visibleEntities.size;
-        for (int i = 0; i < bound; i++) {
-            process(visibleEntities.get(i));
+        viewport.apply();
+
+        batch.setProjectionMatrix(camera.combined);
+        normalFbo.begin();
+        batch.begin();
+        batch.setShader(normalShader);
+        normalShader.setUniformf("u_rot", 1f, 0f);
+        for (int i =-20; i < 20; i+=4) {
+            for (int j = -20; j < 20; j+=4) {
+                batch.draw(ttttt, i, j, 4, 4);
+            }
         }
+//        batch.draw(bgN, -3, -2, 6, 4);
+
+        for (int i = 0; i < bound; i++) {
+            int entity = visibleEntities.get(i);
+            TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entity);
+            DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entity);
+            normalShader.setUniformf("u_rot", transformCM.transform.m00, transformCM.transform.m10);
+            drawable.renderLogic.renderNormal(transformCM.transform, batch);
+            // TODO this is baaaad, maybe modify SpriteBatch to add rotation in the attributes? Flushing after each defeats the point of batch
+            batch.flush();
+        }
+        batch.enableBlending();
+
+
         batch.end();
+        normalFbo.end();
 
+        Texture normals = normalFbo.getColorBufferTexture();
+
+        batch.disableBlending();
+        batch.begin();
+        batch.setShader(null);
+
+        batch.setColor(Color.WHITE);
+        batch.enableBlending();
+//        batch.draw(bg, -3, -2, 6, 4);
+
+        // render all entities
+        for (int i = 0; i < bound; i++) {
+            int entity = visibleEntities.get(i);
+            TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entity);
+            DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entity);
+            drawable.renderLogic.render(transformCM.transform, batch);
+        }
+//        batch.draw(normals, 0, 0, // x, y
+//            viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, // origx, origy
+//            viewport.getWorldWidth(), viewport.getWorldHeight(), // width, height
+//            1, 1, // scale x, y
+//            0,// rotation
+//            0, 0, normals.getWidth(), normals.getHeight(), // tex dimensions
+//            false, true); // flip x, y
+        batch.end();
+//  lightShader.bind();
+//        lightShader.setUniformi("u_normals", 1);
+//        lightShader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        /** BOX2D LIGHT STUFF BEGIN */
+        rayHandler.setCombinedMatrix(camera);
+        rayHandler.update();
+        normals.bind(1);
+        rayHandler.render();
+        /** BOX2D LIGHT STUFF END */
 
     }
 
-    private void process(int entity) {
-        TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entity);
-        DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entity);
-        drawable.renderLogic.render(transformCM.transform, batch);
-//        visibleCMComponentMapper.set(entity, false);
+    public void dispose() {
+        rayHandler.dispose();
+
+        objectReg.getTexture().dispose();
+        objectRegN.getTexture().dispose();
+
+        normalFbo.dispose();
     }
 
+
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+        if (normalFbo != null) normalFbo.dispose();
+        normalFbo = new FrameBuffer(Pixmap.Format.RGB565, width, height, false);
+//        lightShader.bind();
+        lightShader.setUniformi("u_normals", 1);
+        lightShader.setUniformf("u_resolution", width,height);
+        System.out.println(width);
+        System.out.println(height);
+    }
 
     public interface RenderLogic {
         void render(Affine2 tfm, SpriteBatch bth);
+
+        void renderNormal(Affine2 tfm, SpriteBatch bth);
     }
 }
