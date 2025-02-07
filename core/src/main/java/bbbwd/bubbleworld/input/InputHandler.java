@@ -3,9 +3,12 @@ package bbbwd.bubbleworld.input;
 import bbbwd.bubbleworld.Utils;
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Block;
+import bbbwd.bubbleworld.content.blocks.ComposedBlock;
 import bbbwd.bubbleworld.game.components.BoxCM;
+import bbbwd.bubbleworld.game.components.ComposedCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.box2d.structs.b2Transform;
 import com.badlogic.gdx.box2d.structs.b2WorldId;
@@ -16,15 +19,18 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 
-public class InputHandler {
+public abstract class InputHandler implements InputProcessor {
 
+    public abstract void update();
+    public abstract void drawUI();
     /**
      * @param position world position
      * @param newBlock the block to be built
      * @param rot
      * @return null if no place to build
      */
-    public seekResult seekPlaceForBuild(Vector2 position, Block newBlock, int rot) {
+
+    public static seekResult seekPlaceForBuild(Vector2 position, Block newBlock, int rot) {
         b2WorldId worldId = Vars.ecs.getSystem(PhysicsSystem.class).getWorldId();
 //        Viewport viewport = Vars.renderer.viewport;
 
@@ -101,7 +107,7 @@ public class InputHandler {
         Affine2 inv = transform.inv();
         Vector2 newBlockPos = new Vector2(first.tfm.m02, first.tfm.m12);
         ArrayList<candidate> connections = new ArrayList<>(9);
-        for (InputHandler.candidate candidate : nearBy) {
+        for (candidate candidate : nearBy) {
             if (newBlockPos.dst2(candidate.tfm.m02, candidate.tfm.m12) > Vars.GRID_SIZE * Vars.GRID_SIZE)
                 continue;
             Vector2 relative = new Vector2(candidate.pos);
@@ -130,11 +136,28 @@ public class InputHandler {
 
     }
 
+    public abstract void resize(int width, int height);
+
 
     public record seekResult(Affine2 transform, ArrayList<candidate> connections) {
     }
 
     public record candidate(float prefer, int entity, float size, Vector2 pos, Affine2 tfm, Vector2 relative,
                             Vector2 anchorNewBlock, Vector2 anchorOldBlock, float[] relativeAngle) {
+    }
+
+    public static int buildBlock(Affine2 transform, Block newBlock) {
+        int entity = newBlock.create();
+        Vars.ecs.getMapper(TransformCM.class).get(entity).transform.set(transform);
+        if (newBlock instanceof ComposedBlock composedBlock) {
+            int childA = Vars.ecs.getMapper(ComposedCM.class).get(entity).childA;
+            int childB = Vars.ecs.getMapper(ComposedCM.class).get(entity).childB;
+            Vars.ecs.getSystem(PhysicsSystem.class).createBox(childA) ;
+            Vars.ecs.getSystem(PhysicsSystem.class).createBox(childB);
+            composedBlock.compose(childA, childB);
+        } else {
+            Vars.ecs.getSystem(PhysicsSystem.class).createBox(entity);
+        }
+        return entity;
     }
 }
