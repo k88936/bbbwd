@@ -6,15 +6,15 @@ import com.badlogic.gdx.math.MathUtils;
 
 public abstract class ComposedBlock extends Block {
 
-    Block A;
-    Block B;
+    public Block A;
+    public Block B;
 
     ComposedBlock() {
         config();
         A.size = size;
         B.size = size;
         //only used when this is created
-        connectFilter = (newBlock, rx, ry) -> (A.connectFilter.filter(newBlock, rx, ry) || B.connectFilter.filter(newBlock, rx, ry));
+        connectFilter = (newBlock, rx, ry) -> (A.connectFilter.filtOut(newBlock, rx, ry) || B.connectFilter.filtOut(newBlock, rx, ry));
 
     }
 

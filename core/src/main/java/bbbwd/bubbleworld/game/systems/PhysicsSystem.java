@@ -7,10 +7,10 @@ import com.artemis.ComponentMapper;
 import com.artemis.annotations.All;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.box2d.Box2dPlus;
-import com.badlogic.gdx.box2d.enums.b2BodyType;
 import com.badlogic.gdx.box2d.structs.*;
 import com.badlogic.gdx.box2d.utils.Box2dWorldTaskSystem;
 import com.badlogic.gdx.jnigen.runtime.closure.ClosureObject;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
 
@@ -68,25 +68,17 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     }
 
     public void createBox(int entity) {
+
         //todo can inline to a jnicall
         TransformCM transformCM = transformMapper.get(entity);
         BoxCM boxCM = boxMapper.get(entity);
-        b2BodyDef def = Box2d.b2DefaultBodyDef();
-        Box2dPlus.GDXTob2(transformCM.transform, def.position());
-        Box2dPlus.GDXTob2(transformCM.transform, def.rotation());
-        def.type(b2BodyType.b2_dynamicBody);
-        b2Polygon b2Polygon = Box2d.b2MakeSquare(boxCM.size);
-        b2ShapeDef shape = Box2d.b2DefaultShapeDef();
-        boxCM.bodyId = Box2d.b2CreateBody(worldId, def.asPointer());
+        boxCM.bodyId = Box2dPlus.b2CreateBlock(worldId,transformCM.transform,boxCM.size);
         Box2dPlus.b2BodySetRawUserData(boxCM.bodyId, entity);
-        Box2d.b2CreatePolygonShape(boxCM.bodyId, shape.asPointer(), b2Polygon.asPointer());
     }
-    public void addWeldJoint(int entityA, int entityB) {
+    public void connect(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
         BoxCM boxA = boxMapper.get(entityA);
         BoxCM boxB = boxMapper.get(entityB);
-
-        b2WeldJointDef def = Box2d.b2DefaultWeldJointDef();
-        Box2d.b2CreateWeldJoint(worldId, def.asPointer());
+        Box2dPlus.b2ConnectBlockByWeldJoint(worldId,boxA.bodyId,boxB.bodyId,localAnchorA,localAnchorB,referenceAngle);
     }
 //    public void createBody()
 
@@ -95,6 +87,9 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     public void dispose() {
         Box2d.b2DestroyWorld(getWorldId());
         taskSystem.dispose();
+    }
+    public void explode(Vector2 position, float radius,float falloff, float power) {
+        Box2dPlus.b2WorldExplode(worldId,position,radius,falloff ,power);
     }
 
     public b2WorldId getWorldId() {

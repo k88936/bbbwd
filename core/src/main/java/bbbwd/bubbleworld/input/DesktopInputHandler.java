@@ -1,16 +1,33 @@
 package bbbwd.bubbleworld.input;
 
+import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.content.blocks.Block;
+import bbbwd.bubbleworld.content.blocks.Blocks;
+import bbbwd.bubbleworld.game.systems.PhysicsSystem;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.box2d.Box2dPlus;
+import com.badlogic.gdx.box2d.structs.b2WorldId;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.jnigen.runtime.closure.ClosureObject;
+import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.*;
 
+import java.util.logging.Logger;
+
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
-public class DesktopInputHandler extends InputHandler implements Disposable {
+public class DesktopInputHandler extends InputHandler {
+    SeekResult seekResult;
+    Block type = Blocks.testBlock;
+    Vector2 tmp = new Vector2();
+    Vector2 touchInWorld = new Vector2();
     private Stage stage;
     private VisTable table_lu;
     private VisTable table_rd;
@@ -18,14 +35,12 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
 
     public DesktopInputHandler() {
         buildUI();
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(new InputMultiplexer(this, stage));
     }
-    public void buildUI() {
-        // 启用VisUI并加载皮肤，跳过Gdx版本检查
 
-        // 创建一个舞台，用于放置和管理所有的演员（actors）
+    public void buildUI() {
+
         stage = new Stage(new ScreenViewport());
-        // 设置输入处理器为舞台，以便舞台可以处理输入事件
 
         // 创建一个VisTable作为根布局容器，并设置为填充整个舞台
         VisTable root = new VisTable();
@@ -43,7 +58,7 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
         table_lu_row1.setSize(250, 50);
         table_lu.add(table_lu_row1);
         table_lu.row();
-        VisTextButton visTextButtons_lu_row1[] = new VisTextButton[5];
+        VisTextButton[] visTextButtons_lu_row1 = new VisTextButton[5];
         for (int i = 0; i < 5; i++) {
             visTextButtons_lu_row1[i] = new VisTextButton("" + (i + 1));
             //visTextButtons_lu_row1[i].setSize(50,50);//这行似乎不需要
@@ -53,7 +68,7 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
         VisTable table_lu_row2 = new VisTable();
         table_lu_row2.setSize(250, 50);
         table_lu.add(table_lu_row2);
-        VisTextButton visTextButtons_lu_row2[] = new VisTextButton[2];
+        VisTextButton[] visTextButtons_lu_row2 = new VisTextButton[2];
         visTextButtons_lu_row2[0] = new VisTextButton("1");
         visTextButtons_lu_row2[1] = new VisTextButton("2");
         table_lu_row2.add(visTextButtons_lu_row2[0]).width(220).height(50);
@@ -152,7 +167,6 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
 
     }
 
-
     @Override
     public void dispose() {
         // 清理资源
@@ -163,6 +177,17 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
     @Override
     public void update() {
         stage.act();
+        if (seekResult != null) {
+            Batch b = Vars.renderer.getBatch();
+            b.begin();
+            Blocks.testBlock.renderLogic.render(seekResult.transform(), b);
+            b.end();
+        }
+//        Batch b = Vars.renderer.getBatch();
+//            b.begin();
+//            Blocks.testBlock.renderLogic.render(new Affine2().translate(touchInWorld), b);
+//            b.end();
+
 //        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
     }
 
@@ -173,6 +198,17 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
 
     @Override
     public boolean keyDown(int keycode) {
+        System.out.println("key pressed: " + keycode);
+        switch (keycode) {
+            case Input.Keys.SPACE -> {
+                if (seekResult == null) return false;
+                buildAndConnect(seekResult);
+                seekResult=null;
+            }
+            case Input.Keys.E -> {
+                Vars.ecs.getSystem(PhysicsSystem.class).explode(touchInWorld, 2, 1, 1);
+            }
+        }
         return false;
     }
 
@@ -188,6 +224,21 @@ public class DesktopInputHandler extends InputHandler implements Disposable {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        tmp.set(Gdx.input.getX(), Gdx.input.getY());
+        Vars.renderer.getViewport().unproject(tmp);
+        touchInWorld.set(tmp);
+//
+//        b2WorldId worldId = Vars.ecs.getSystem(PhysicsSystem.class).getWorldId();
+//        Box2dPlus.b2WorldOverlapSquare(worldId,0.3f, new Affine2().translate(touchInWorld), ClosureObject.fromClosure(entity -> {
+//
+//            System.out.println("hit");
+//            return false;
+//        }));
+        Logger.getGlobal().info("touchInorld: "+touchInWorld);
+        seekResult = seekPlaceForBuild(touchInWorld, type, 0);
+            Logger.getGlobal().info("seekResult: " + seekResult);
+
+
         return false;
     }
 

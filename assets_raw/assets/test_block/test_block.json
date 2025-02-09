@@ -1,0 +1,11 @@
+{
+  "width": 64,
+    "height": 64,
+  "layers": [
+    {
+
+      "src":"test_block.png",
+      "texture": "iron_5.png"
+    }
+  ]
+}

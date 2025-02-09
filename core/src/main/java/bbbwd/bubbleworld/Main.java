@@ -18,6 +18,13 @@ import com.kotcrab.vis.ui.VisUI;
  */
 public class Main extends ApplicationAdapter {
 
+    enum Platform {
+        Desktop,
+        Android,
+        IOS,
+        HTML,
+        Headless
+    }
     @Override
     public void create() {
         Box2d.initialize();
@@ -27,12 +34,13 @@ public class Main extends ApplicationAdapter {
         Vars.contentLoader = new ContentLoader();
         Vars.contentLoader.load();
         Vars.control = new Control();
+        Control.init.apply(null);
         Vars.control.startGame();
         Vars.renderer = new Renderer();
 
         float xb = 4;
         float yb = 4;
-        InputHandler.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb - 1), Blocks.testBlock);
+        InputHandler.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb - 0.9f), Blocks.testBlock);
         InputHandler.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb + 1), Blocks.testBlock);
         InputHandler.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb - 1), Blocks.testBlock);
         InputHandler.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb + 1), Blocks.testBlock);
@@ -49,13 +57,16 @@ public class Main extends ApplicationAdapter {
             Vars.ecs.process();
             Vars.renderer.render();
         }
-//        Vars.control.inputHandler.drawUI();
+        Vars.control.inputHandler.drawUI();
     }
 
     @Override
     public void dispose() {
+        Vars.renderer.dispose();
+        Vars.control.inputHandler.dispose();
         VisUI.dispose();
         super.dispose();
+
     }
 
     @Override

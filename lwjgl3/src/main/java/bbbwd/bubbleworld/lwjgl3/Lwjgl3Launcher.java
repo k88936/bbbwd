@@ -1,8 +1,11 @@
 package bbbwd.bubbleworld.lwjgl3;
 
+import bbbwd.bubbleworld.Main;
+import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.core.Control;
+import bbbwd.bubbleworld.input.DesktopInputHandler;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import bbbwd.bubbleworld.Main;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
@@ -12,6 +15,10 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
+        Control.init = (unused) -> {
+            Vars.control.inputHandler = new DesktopInputHandler();
+            return null;
+        };
         return new Lwjgl3Application(new Main(), getDefaultConfiguration());
     }
 

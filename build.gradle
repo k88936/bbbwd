@@ -14,10 +14,11 @@ buildscript {
   }
 }
 
-//tasks.register('genAssets', Exec) {
-//  workingDir
-//  commandLine 'python','tools/assets_gen.py'
-//}
+tasks.register('genAssets', Exec) {
+  workingDir ="assets_raw"
+  commandLine 'make'
+
+}
 // Store the parameters you want to pass the texturePacker here...
 project.ext.texturePacker = [ "assets_gen", "assets/packed", "assets.atlas" ]
 
@@ -82,6 +83,7 @@ subprojects {
   repositories {
     mavenCentral()
     maven { url 'https://s01.oss.sonatype.org' }
+    mavenLocal()
     maven {
       url = "https://maven.pkg.github.com/k88936/box2dlights"
       credentials {
@@ -100,7 +102,6 @@ subprojects {
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://jitpack.io' }
-    mavenLocal()
   }
 }
 

@@ -47,7 +47,7 @@ public abstract class Block {
          * @param ry newBlock relative to oldBlock
          * @return ture to pass(CANNOT connect)
          */
-        boolean filter(Block newBlock, float rx, float ry);
+        boolean filtOut(Block newBlock, float rx, float ry);
     }
 }
 
