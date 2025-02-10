@@ -5,7 +5,6 @@ import bbbwd.bubbleworld.core.ContentLoader;
 import bbbwd.bubbleworld.core.Control;
 import bbbwd.bubbleworld.core.Renderer;
 import bbbwd.bubbleworld.core.Resources;
-import bbbwd.bubbleworld.input.InputHandler;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.math.Affine2;
@@ -40,10 +39,10 @@ public class Main extends ApplicationAdapter {
 
         float xb = 4;
         float yb = 4;
-        InputHandler.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb - 0.9f), Blocks.testBlock);
-        InputHandler.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb + 1), Blocks.testBlock);
-        InputHandler.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb - 1), Blocks.testBlock);
-        InputHandler.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb + 1), Blocks.testBlock);
+        Control.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb - 0.9f), Blocks.testBlock);
+        Control.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb + 1), Blocks.testBlock);
+        Control.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb - 1), Blocks.testBlock);
+        Control.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb + 2), Blocks.testHingeBlock);
 
     }
 

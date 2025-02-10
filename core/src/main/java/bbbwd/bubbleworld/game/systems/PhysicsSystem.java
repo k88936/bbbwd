@@ -42,7 +42,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         ThreadLocal<b2Transform> cache = ThreadLocal.withInitial(b2Transform::new);
         Arrays.stream(subscription.getEntities().getData(), 0, subscription.getEntities().size()).parallel().forEach(entityId -> {
             BoxCM physics = boxMapper.get(entityId);
-            if(physics.isStatic) return;
+            if (physics.isStatic) return;
             Box2dPlus.b2Body_GetTransform(physics.bodyId, cache.get());
             TransformCM transformCM = transformMapper.get(entityId);
             Box2dPlus.b2ToGDX(cache.get(), transformCM.transform);
@@ -67,19 +67,40 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         }));
     }
 
-    public void createBox(int entity) {
-
+    public b2BodyId createBox(int entity) {
         //todo can inline to a jnicall
         TransformCM transformCM = transformMapper.get(entity);
         BoxCM boxCM = boxMapper.get(entity);
-        boxCM.bodyId = Box2dPlus.b2CreateBlock(worldId,transformCM.transform,boxCM.size);
+        boxCM.bodyId = Box2dPlus.b2CreateBlock(worldId, transformCM.transform, boxCM.size);
         Box2dPlus.b2BodySetRawUserData(boxCM.bodyId, entity);
+        return boxCM.bodyId;
     }
-    public void connect(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
+
+    public b2JointId connectByWeld(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
         BoxCM boxA = boxMapper.get(entityA);
         BoxCM boxB = boxMapper.get(entityB);
-        Box2dPlus.b2ConnectBlockByWeldJoint(worldId,boxA.bodyId,boxB.bodyId,localAnchorA,localAnchorB,referenceAngle);
+        b2JointId id = Box2dPlus.b2ConnectBlockByWeldJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, referenceAngle);
+        return id;
     }
+    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float limitLower, float limitUpper,float maxTorch) {
+        BoxCM boxA = boxMapper.get(entityA);
+        BoxCM boxB = boxMapper.get(entityB);
+        b2JointId id = Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, limitLower, limitUpper, maxTorch);
+        Box2d.b2RevoluteJoint_SetMotorSpeed(id,0.5f);
+        return id;
+    }
+//    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limitLower, float limitUpper,float maxTorch) {
+//        BoxCM boxA = boxMapper.get(entityA);
+//        BoxCM boxB = boxMapper.get(entityB);
+//        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, center,center,limitLower,limitUpper,maxTorch);
+//    }
+//    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limit,float maxTorch) {
+//        BoxCM boxA = boxMapper.get(entityA);
+//        BoxCM boxB = boxMapper.get(entityB);
+//        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, center,center,limit,limit,maxTorch);
+//    }
+
+
 //    public void createBody()
 
 
@@ -88,8 +109,9 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         Box2d.b2DestroyWorld(getWorldId());
         taskSystem.dispose();
     }
-    public void explode(Vector2 position, float radius,float falloff, float power) {
-        Box2dPlus.b2WorldExplode(worldId,position,radius,falloff ,power);
+
+    public void explode(Vector2 position, float radius, float falloff, float power) {
+        Box2dPlus.b2WorldExplode(worldId, position, radius, falloff, power);
     }
 
     public b2WorldId getWorldId() {

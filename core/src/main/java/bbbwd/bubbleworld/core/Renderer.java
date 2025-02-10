@@ -53,7 +53,7 @@ public class Renderer {
         camera = new OrthographicCamera();
         getCamera().update();
 
-        viewport = new ExtendViewport(8, 8, getCamera());
+        viewport = new ExtendViewport(10, 10, getCamera());
 
         batch = new SpriteBatch();
         font = new BitmapFont();

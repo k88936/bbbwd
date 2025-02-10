@@ -3,15 +3,12 @@ package bbbwd.bubbleworld.input;
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Block;
 import bbbwd.bubbleworld.content.blocks.Blocks;
+import bbbwd.bubbleworld.core.Control;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.box2d.Box2dPlus;
-import com.badlogic.gdx.box2d.structs.b2WorldId;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.jnigen.runtime.closure.ClosureObject;
-import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -24,7 +21,7 @@ import java.util.logging.Logger;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class DesktopInputHandler extends InputHandler {
-    SeekResult seekResult;
+    Control.SeekResult seekResult;
     Block type = Blocks.testBlock;
     Vector2 tmp = new Vector2();
     Vector2 touchInWorld = new Vector2();
@@ -202,8 +199,8 @@ public class DesktopInputHandler extends InputHandler {
         switch (keycode) {
             case Input.Keys.SPACE -> {
                 if (seekResult == null) return false;
-                buildAndConnect(seekResult);
-                seekResult=null;
+                Control.buildAndConnect(seekResult);
+                seekResult = null;
             }
             case Input.Keys.E -> {
                 Vars.ecs.getSystem(PhysicsSystem.class).explode(touchInWorld, 2, 1, 1);
@@ -234,9 +231,9 @@ public class DesktopInputHandler extends InputHandler {
 //            System.out.println("hit");
 //            return false;
 //        }));
-        Logger.getGlobal().info("touchInorld: "+touchInWorld);
-        seekResult = seekPlaceForBuild(touchInWorld, type, 0);
-            Logger.getGlobal().info("seekResult: " + seekResult);
+        Logger.getGlobal().info("touchInorld: " + touchInWorld);
+        seekResult = Control.seekPlaceForBuild(touchInWorld, type, 0);
+        Logger.getGlobal().info("seekResult: " + seekResult);
 
 
         return false;

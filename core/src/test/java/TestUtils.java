@@ -3,7 +3,6 @@ import bbbwd.bubbleworld.content.blocks.Block;
 import bbbwd.bubbleworld.core.ContentLoader;
 import bbbwd.bubbleworld.core.Control;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
-import bbbwd.bubbleworld.input.InputHandler;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.box2d.structs.b2WorldId;
 import com.badlogic.gdx.math.Affine2;
@@ -12,11 +11,11 @@ public class TestUtils {
     public static b2WorldId worldId;
 
     public static int setBlock(float angle, float x, float y, Block type) {
-        return InputHandler.buildBlock(new Affine2().translate(x, y).rotate(angle), type);
+        return Control.buildBlock(new Affine2().translate(x, y).rotate(angle), type);
     }
 
     public static int setBlock(Affine2 tfm, Block type) {
-        return InputHandler.buildBlock(tfm, type);
+        return Control.buildBlock(tfm, type);
     }
 
     public static int setBlock(float c, float s, int x, int y, Block type) {
@@ -25,7 +24,7 @@ public class TestUtils {
         translate.m01 = -s;
         translate.m10 = s;
         translate.m11 = c;
-        return InputHandler.buildBlock(translate, type);
+        return Control.buildBlock(translate, type);
     }
 
     public static void init() {

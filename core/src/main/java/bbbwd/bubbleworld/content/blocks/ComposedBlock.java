@@ -6,15 +6,20 @@ import com.badlogic.gdx.math.MathUtils;
 
 public abstract class ComposedBlock extends Block {
 
-    public Block A;
-    public Block B;
+    static final Block defaultBlock = new Block() {
+        @Override
+        void config() {
+
+        }
+    };
+    public Block A = defaultBlock;
+    public Block B = defaultBlock;
 
     ComposedBlock() {
         config();
         A.size = size;
         B.size = size;
-        //only used when this is created
-        connectFilter = (newBlock, rx, ry) -> (A.connectFilter.filtOut(newBlock, rx, ry) || B.connectFilter.filtOut(newBlock, rx, ry));
+        connectFilter = (newBlock, rx, ry) -> (A.connectFilter.filterOut(newBlock, rx, ry) || B.connectFilter.filterOut(newBlock, rx, ry));
 
     }
 
@@ -30,5 +35,5 @@ public abstract class ComposedBlock extends Block {
         return entity;
     }
 
-    public abstract void compose(int entityA, int entityB);
+    public abstract void compose(int entityA, int entityB, int baseEntity);
 }
