@@ -33,7 +33,7 @@ public class Main extends ApplicationAdapter {
         Vars.contentLoader = new ContentLoader();
         Vars.contentLoader.load();
         Vars.control = new Control();
-        Control.init.apply(null);
+        Control.init.run();
         Vars.control.startGame();
         Vars.renderer = new Renderer();
 

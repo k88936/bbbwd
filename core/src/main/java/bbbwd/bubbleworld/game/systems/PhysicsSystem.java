@@ -7,9 +7,11 @@ import com.artemis.ComponentMapper;
 import com.artemis.annotations.All;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.box2d.Box2dPlus;
-import com.badlogic.gdx.box2d.structs.*;
+import com.badlogic.gdx.box2d.structs.b2JointId;
+import com.badlogic.gdx.box2d.structs.b2Transform;
+import com.badlogic.gdx.box2d.structs.b2WorldDef;
+import com.badlogic.gdx.box2d.structs.b2WorldId;
 import com.badlogic.gdx.box2d.utils.Box2dWorldTaskSystem;
-import com.badlogic.gdx.jnigen.runtime.closure.ClosureObject;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
@@ -42,7 +44,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         ThreadLocal<b2Transform> cache = ThreadLocal.withInitial(b2Transform::new);
         Arrays.stream(subscription.getEntities().getData(), 0, subscription.getEntities().size()).parallel().forEach(entityId -> {
             BoxCM physics = boxMapper.get(entityId);
-            if (physics.isStatic) return;
+//            if (physics.isStatic) return;
             Box2dPlus.b2Body_GetTransform(physics.bodyId, cache.get());
             TransformCM transformCM = transformMapper.get(entityId);
             Box2dPlus.b2ToGDX(cache.get(), transformCM.transform);
@@ -50,7 +52,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     }
 
     public void collect(float lx, float ly, float ux, float uy, IntArray entities) {
-        Box2dPlus.b2WorldOverlapAABBbyEntity(getWorldId(), lx, ly, ux, uy, ClosureObject.fromClosure(new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(getWorldId(), lx, ly, ux, uy, new Box2dPlus.EntityCallback() {
 //            final b2Transform cache = new b2Transform();
 
             @Override
@@ -64,30 +66,21 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
 //                System.out.println(transformCM.transform);
                 return true;
             }
-        }));
+        });
     }
 
-    public b2BodyId createBox(int entity) {
-        //todo can inline to a jnicall
-        TransformCM transformCM = transformMapper.get(entity);
-        BoxCM boxCM = boxMapper.get(entity);
-        boxCM.bodyId = Box2dPlus.b2CreateBlock(worldId, transformCM.transform, boxCM.size);
-        Box2dPlus.b2BodySetRawUserData(boxCM.bodyId, entity);
-        return boxCM.bodyId;
-    }
 
     public b2JointId connectByWeld(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
         BoxCM boxA = boxMapper.get(entityA);
         BoxCM boxB = boxMapper.get(entityB);
-        b2JointId id = Box2dPlus.b2ConnectBlockByWeldJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, referenceAngle);
-        return id;
+        return Box2dPlus.b2ConnectBlockByWeldJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, referenceAngle);
     }
-    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float limitLower, float limitUpper,float maxTorch) {
+
+    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float limitLower, float limitUpper, float maxTorch) {
         BoxCM boxA = boxMapper.get(entityA);
         BoxCM boxB = boxMapper.get(entityB);
-        b2JointId id = Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, limitLower, limitUpper, maxTorch);
-        Box2d.b2RevoluteJoint_SetMotorSpeed(id,0.5f);
-        return id;
+        //        Box2d.b2RevoluteJoint_SetMotorSpeed(id, 0.5f);
+        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, limitLower, limitUpper, maxTorch);
     }
 //    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limitLower, float limitUpper,float maxTorch) {
 //        BoxCM boxA = boxMapper.get(entityA);

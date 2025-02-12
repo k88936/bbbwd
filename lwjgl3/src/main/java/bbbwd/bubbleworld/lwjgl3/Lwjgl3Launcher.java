@@ -14,12 +14,11 @@ public class Lwjgl3Launcher {
         createApplication();
     }
 
-    private static Lwjgl3Application createApplication() {
-        Control.init = (unused) -> {
+    private static void createApplication() {
+        Control.init = () -> {
             Vars.control.inputHandler = new DesktopInputHandler();
-            return null;
         };
-        return new Lwjgl3Application(new Main(), getDefaultConfiguration());
+        new Lwjgl3Application(new Main(), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {

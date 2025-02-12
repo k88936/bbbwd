@@ -9,7 +9,9 @@ from PIL import Image
 
 assets_output = "assets_gen"
 assets_input = sys.argv[1]
+verticesDataOutputPath="assets/packed/polygons.json"
 
+PIXEL_PER_SIZE=64
 copy_dir_structure = False
 
 # shutil.rmtree(assets_output, ignore_errors=True)
@@ -20,13 +22,14 @@ for root, dirs, files in os.walk(assets_input):
         if file_name.endswith(".json"):
             with open(file_path, 'r') as file:
                 config = json.loads(file.read())
-                # print(j)
                 name = file_name.split(".")[0]
-                print(name)
+                print(f"> Processing: {name}")
                 w = config['width']
                 h = config['height']
                 canvas = Image.new("RGBA", (w, h), (255, 255, 255, 0))
+                vertices = []
                 for layer in config["layers"]:
+                    print(f"\t\t> Processing layer: {layer['src']}")
                     src = Image.open(os.path.join(root, layer["src"]))
                     src=src.convert("RGBA")
                     texture = Image.open(os.path.join("assets_raw" ,"textures", layer["texture"]))
@@ -38,6 +41,9 @@ for root, dirs, files in os.walk(assets_input):
                             r1, g1, b1, a1 = texture.getpixel((i, j))
                             if r == 0 and g == 255 and b == 0:
                                 continue
+                            if r==255 and g==0 and b==0:
+                                vertices.append((i+0.5)/PIXEL_PER_SIZE-0.5*w/PIXEL_PER_SIZE)
+                                vertices.append(0.5*w/PIXEL_PER_SIZE-(j+0.5)/PIXEL_PER_SIZE)
                             canvas.putpixel((i, j),
                                             (int(r * alpha + r1 * (1 - alpha)), int(g * alpha + g1 * (1 - alpha)),
                                              int(b * alpha + b1 * (1 - alpha)), a1))
@@ -46,6 +52,7 @@ for root, dirs, files in os.walk(assets_input):
                             # )
 
                 if os.path.exists(os.path.join(root, name + ".height.png")):
+                    print(f"\t\t> found height map, generating normal map")
                     height=Image.open(os.path.join(root, name + ".height.png"))
                     height=height.convert("RGBA")
                     ix=[]
@@ -65,23 +72,6 @@ for root, dirs, files in os.walk(assets_input):
                     # variogram_model是变差函数模型，pykrige提供 linear, power, gaussian, spherical, exponential, hole-effect几种variogram_model可供选择，默认的为linear模型。
                     # 使用不同的variogram_model，预测效果是不一样的，应该针对自己的任务选择合适的variogram_model。
                     k3d1, ss3d = ok3d.execute("grid", gridx, gridy)  # k3d1是结果，给出了每个网格点处对应的值
-
-                    # print(np.round(k3d1, 2))
-                    # # 输出的结果
-                    # # [[0.91 0.87 0.81 0.75 0.7 0.66]
-                    # #  [0.92 0.9 0.8 0.74 0.68 0.63]
-                    # #  [0.92 0.89 0.81 0.72 0.65 0.59]
-                    # #  [0.91 0.9 0.8 0.7 0.62 0.55]
-                    # #  [0.88 0.84 0.77 0.68 0.59 0.5]
-                    # #  [0.84 0.8 0.74 0.67 0.59 0.53]]
-                    #
-                    # # 绘图
-                    # fig, (ax1) = plt.subplots(1)
-                    # ax1.imshow(k3d1, origin="upper")
-                    # ax1.set_title("ordinary kriging")
-                    # plt.tight_layout()
-                    # plt.show()
-
                     normal_map = Image.new("RGBA", (w, h), (0, 0, 0, 0))
                     for i in range(1, w - 1):
                         for j in range(1, h - 1):
@@ -95,7 +85,19 @@ for root, dirs, files in os.walk(assets_input):
 
                     normal_output_path = os.path.join(assets_output, f"{name}.normal.png")
                     normal_map.save(normal_output_path)
-                    print(f"Normal map saved to: {normal_output_path}")
+                if len(vertices)>0:
+                    if len(vertices)%2!=0:
+                        print("\t\t>>>vertices length is not even<<<")
+                        exit(1)
+                    print(f"\t\t> vertices array in different format:\n"
+                          f"\t\t\t{','.join([str(x) for x in vertices])}\n\n"
+                          f"\t\t\t{{{','.join([str(x) for x in vertices])}}}\n")
+                    with open(verticesDataOutputPath, "r") as verticesDataFile:
+                        verticesData=json.loads(verticesDataFile.read())
+                    verticesDataRoot=verticesData["polygons"]
+                    verticesDataRoot[name] = vertices
+                    with open(verticesDataOutputPath, "w") as verticesDataFile:
+                        json.dump(verticesData,verticesDataFile,indent=4)
 
                 if copy_dir_structure:
                     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -105,7 +107,5 @@ for root, dirs, files in os.walk(assets_input):
                     output_path = os.path.join(assets_output, f"{name}.png")
 
                 canvas.save(output_path)
-                print(f"Directory: {root}")
-        print(f"File: {file_name}")
 
 # Example usage

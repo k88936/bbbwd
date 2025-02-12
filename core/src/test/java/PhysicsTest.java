@@ -19,7 +19,7 @@ public class PhysicsTest {
 
 
         final boolean[] ok = {false};
-        Box2dPlus.b2WorldOverlapSquare(TestUtils.worldId, 0.4f, tmp, ClosureObject.fromClosure(entity1 -> {
+        Box2dPlus.b2WorldOverlapSquare(TestUtils.worldId, 0.4f, tmp, (entity1 -> {
             ok[0] = true;
             return false;
         }));

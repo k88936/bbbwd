@@ -13,13 +13,15 @@ public class Blocks {
 
     public static void loadBlocks() {
         // Load blocks
-        Block.defaulttexture = Vars.resources.getTexureRegion("test_block");
+        Block.defaultTexture = Vars.resources.getTexureRegion("test_block");
         Block.defaultNormal = Vars.resources.getTexureRegion("test_block.normal");
 
         testBlock = new Block() {
             @Override
             void config() {
                 connectFilter = (newBlock, rx, ry) -> false;
+                hull = Vars.resources.getHull("test_block");
+                shape = ShapePolygon;
             }
         };
         testBlock_OnlyConnectX = new Block() {
