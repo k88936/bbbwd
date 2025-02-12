@@ -1,9 +1,10 @@
-package bbbwd.bubbleworld.game.components;
+package bbbwd.bubbleworld.game.components.physics;
 
 import com.artemis.PooledComponent;
 import com.badlogic.gdx.box2d.structs.*;
 
-public class ConnectionCM extends PooledComponent {
+
+public class JointCM extends PooledComponent {
 
     public b2JointId jointId;
     public int entityA;

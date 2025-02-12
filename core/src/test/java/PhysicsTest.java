@@ -1,6 +1,4 @@
 import bbbwd.bubbleworld.content.blocks.Blocks;
-import bbbwd.bubbleworld.game.components.BoxCM;
-import bbbwd.bubbleworld.game.components.TransformCM;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.box2d.enums.b2BodyType;

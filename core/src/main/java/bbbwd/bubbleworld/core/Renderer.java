@@ -196,6 +196,8 @@ public class Renderer {
     }
 
     public interface RenderLogic {
+        Affine2 tmpAffine2 = new Affine2();
+
         void render(Affine2 tfm, Batch bth);
 
         void renderNormal(Affine2 tfm, Batch bth);

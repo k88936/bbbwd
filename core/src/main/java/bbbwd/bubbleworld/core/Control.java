@@ -3,9 +3,9 @@ package bbbwd.bubbleworld.core;
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Block;
 import bbbwd.bubbleworld.content.blocks.ComposedBlock;
-import bbbwd.bubbleworld.game.components.BoxCM;
-import bbbwd.bubbleworld.game.components.ComposedCM;
+import bbbwd.bubbleworld.game.components.physics.JointCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
+import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
 import bbbwd.bubbleworld.input.InputHandler;
 import bbbwd.bubbleworld.utils.Job;
@@ -56,14 +56,14 @@ public class Control {
                 Affine2 inv = new Affine2(transformCM.transform).inv();
                 Vector2 local = new Vector2(position);
                 inv.applyTo(local);
-                BoxCM boxCM = Vars.ecs.getMapper(BoxCM.class).get(entityId);
+                DynamicBodyCM dynamicBodyCM = Vars.ecs.getMapper(DynamicBodyCM.class).get(entityId);
 
                 //ret
                 Affine2 tfm = null;
                 float min = Float.MAX_VALUE;
                 Vector2 localGridPos = new Vector2();
 
-                float edge = boxCM.type.size + newBlock.size;
+                float edge = dynamicBodyCM.type.size + newBlock.size;
                 for (float lx = -edge; lx <= edge; lx += Vars.GRID_SIZE * 2) {
                     for (float ly = -edge; ly <= edge; ly += Vars.GRID_SIZE * 2) {
                         if (Math.abs(lx) == edge && Math.abs(ly) == edge)
@@ -71,12 +71,12 @@ public class Control {
                         if (lx > -edge && lx < edge && ly > -edge && ly < edge)
                             continue;
                         float cur = (lx - local.x) * (lx - local.x) + (ly - local.y) * (ly - local.y);
-                        if (boxCM.type.connectFilter.filterOut(newBlock, lx, ly)) continue;
+                        if (dynamicBodyCM.type.connectFilter.filterOut(newBlock, lx, ly)) continue;
                         if (cur >= min) continue;
                         final boolean[] ok = {false};
                         Affine2 tmp = new Affine2(transformCM.transform).translate(lx, ly);
                         newBlock.shape.overlap(newBlock, tmp, entity1 -> {
-                            ok[0]=true;
+                            ok[0] = true;
                             return false;
                         });
                         if (ok[0]) {
@@ -95,7 +95,7 @@ public class Control {
                 Connection connection = new Connection();
                 connection.prefer = min;
                 connection.oldBoxEntity = entityId;
-                connection.size = boxCM.type.size;
+                connection.size = dynamicBodyCM.type.size;
                 connection.oldBlockTfm = transformCM.transform;
                 connection.newPosRelativeToOld.set(localGridPos);
                 connection.newBlockTfm.set(tfm);
@@ -131,9 +131,9 @@ public class Control {
                 boolean b = composedBlock.B.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y);
                 if (a && b) continue;
                 if (a)
-                    connection.newBoxEntityMapper = ((id) -> Vars.ecs.getMapper(ComposedCM.class).get(id).childB);
+                    connection.newBoxEntityMapper = ((id) -> Vars.ecs.getMapper(JointCM.class).get(id).entityB);
                 else if (b)
-                    connection.newBoxEntityMapper = ((id) -> Vars.ecs.getMapper(ComposedCM.class).get(id).childA);
+                    connection.newBoxEntityMapper = ((id) -> Vars.ecs.getMapper(JointCM.class).get(id).entityA);
 
             } else {
                 if (newBlock.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y)) continue;
@@ -179,9 +179,8 @@ public class Control {
     public static void buildAndConnect(SeekResult seekResult) {
         int id = buildBlock(seekResult.transform(), seekResult.type());
         for (Connection connection : seekResult.connections()) {
-
             Vars.ecs.getSystem(PhysicsSystem.class)
-                .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
+                   .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
                     connection.anchorNewBlock, connection.anchorOldBlock,
                     connection.relativeAngle);
             Logger.getGlobal().info(connection.toString());

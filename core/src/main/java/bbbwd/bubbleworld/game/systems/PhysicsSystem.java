@@ -1,6 +1,6 @@
 package bbbwd.bubbleworld.game.systems;
 
-import bbbwd.bubbleworld.game.components.BoxCM;
+import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import com.artemis.BaseEntitySystem;
 import com.artemis.ComponentMapper;
@@ -18,13 +18,13 @@ import com.badlogic.gdx.utils.IntArray;
 
 import java.util.Arrays;
 
-@All({TransformCM.class, BoxCM.class})
+@All({TransformCM.class, DynamicBodyCM.class})
 public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     private static final int workerCount = Runtime.getRuntime().availableProcessors();
     private final b2WorldId worldId;
     private final Box2dWorldTaskSystem taskSystem;
     public ComponentMapper<TransformCM> transformMapper;
-    public ComponentMapper<BoxCM> boxMapper;
+    public ComponentMapper<DynamicBodyCM> boxMapper;
 //    public ComponentMapper<VisibleCM> visibleMapper;
 
     public PhysicsSystem() {
@@ -43,9 +43,8 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         taskSystem.afterStep();
         ThreadLocal<b2Transform> cache = ThreadLocal.withInitial(b2Transform::new);
         Arrays.stream(subscription.getEntities().getData(), 0, subscription.getEntities().size()).parallel().forEach(entityId -> {
-            BoxCM physics = boxMapper.get(entityId);
-//            if (physics.isStatic) return;
-            Box2dPlus.b2Body_GetTransform(physics.bodyId, cache.get());
+            DynamicBodyCM dynamicBodyCM = boxMapper.get(entityId);
+            Box2dPlus.b2Body_GetTransform(dynamicBodyCM.bodyId, cache.get());
             TransformCM transformCM = transformMapper.get(entityId);
             Box2dPlus.b2ToGDX(cache.get(), transformCM.transform);
         });
@@ -58,7 +57,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
             @Override
             public boolean b2OverlapResultFcn_call(long entity) {
                 int entityId = (int) entity;
-//                BoxCM physics = boxMapper.get(entityId);
+//                DynamicBodyCM physics = boxMapper.get(entityId);
 //                Box2dPlus.b2Body_GetTransform(physics.bodyId, cache);
 //                TransformCM transformCM = transformMapper.get(entityId);
 //                Box2dPlus.b2ToGDX(cache, transformCM.transform);
@@ -71,25 +70,25 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
 
 
     public b2JointId connectByWeld(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
-        BoxCM boxA = boxMapper.get(entityA);
-        BoxCM boxB = boxMapper.get(entityB);
+        DynamicBodyCM boxA = boxMapper.get(entityA);
+        DynamicBodyCM boxB = boxMapper.get(entityB);
         return Box2dPlus.b2ConnectBlockByWeldJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, referenceAngle);
     }
 
     public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float limitLower, float limitUpper, float maxTorch) {
-        BoxCM boxA = boxMapper.get(entityA);
-        BoxCM boxB = boxMapper.get(entityB);
+        DynamicBodyCM boxA = boxMapper.get(entityA);
+        DynamicBodyCM boxB = boxMapper.get(entityB);
         //        Box2d.b2RevoluteJoint_SetMotorSpeed(id, 0.5f);
         return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, limitLower, limitUpper, maxTorch);
     }
 //    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limitLower, float limitUpper,float maxTorch) {
-//        BoxCM boxA = boxMapper.get(entityA);
-//        BoxCM boxB = boxMapper.get(entityB);
+//        DynamicBodyCM boxA = boxMapper.get(entityA);
+//        DynamicBodyCM boxB = boxMapper.get(entityB);
 //        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, center,center,limitLower,limitUpper,maxTorch);
 //    }
 //    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limit,float maxTorch) {
-//        BoxCM boxA = boxMapper.get(entityA);
-//        BoxCM boxB = boxMapper.get(entityB);
+//        DynamicBodyCM boxA = boxMapper.get(entityA);
+//        DynamicBodyCM boxB = boxMapper.get(entityB);
 //        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, center,center,limit,limit,maxTorch);
 //    }
 

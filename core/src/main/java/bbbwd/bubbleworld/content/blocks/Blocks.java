@@ -16,6 +16,9 @@ public class Blocks {
         Block.defaultTexture = Vars.resources.getTexureRegion("test_block");
         Block.defaultNormal = Vars.resources.getTexureRegion("test_block.normal");
 
+
+
+        
         testBlock = new Block() {
             @Override
             void config() {
@@ -45,9 +48,8 @@ public class Blocks {
                         renderLogic = new Renderer.RenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
-                                tfm.translate(-size, -size);
-                                bth.draw(textureA, 2 * size, 2 * size, tfm);
-                                tfm.translate(size, size);
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(textureA, 2 * size, 2 * size, tmpAffine2);
                             }
 
                             @Override
@@ -68,14 +70,14 @@ public class Blocks {
                         renderLogic = new Renderer.RenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
-                                tfm.translate(-size, -size);
-                                bth.draw(textureB, 2 * size, 2 * size, tfm);
-                                tfm.translate(size, size);
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(textureB, 2 * size, 2 * size, tmpAffine2);
                             }
 
                             @Override
                             public void renderNormal(Affine2 tfm, Batch bth) {
-
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(textureB, 2 * size, 2 * size, tmpAffine2);
                             }
                         };
                     }

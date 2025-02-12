@@ -1,9 +1,9 @@
-package bbbwd.bubbleworld.game.components;
+package bbbwd.bubbleworld.game.components.physics;
 
 import com.artemis.PooledComponent;
 import com.badlogic.gdx.box2d.structs.b2BodyId;
 
-public class SolidCM extends PooledComponent {
+public class StaticBodyCM extends PooledComponent {
     b2BodyId bodyId;
     @Override
     protected void reset() {

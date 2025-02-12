@@ -1,9 +1,6 @@
 package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
-import bbbwd.bubbleworld.game.components.ComposedCM;
-import bbbwd.bubbleworld.game.components.TransformCM;
-import bbbwd.bubbleworld.game.systems.PhysicsSystem;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.MathUtils;
 
@@ -32,9 +29,9 @@ public abstract class ComposedBlock extends Block {
         int A = this.A.create(transform);
         int B = this.B.create(transform);
         int entity = Vars.ecs.create();
-        ComposedCM composedCM = Vars.ecs.getMapper(ComposedCM.class).create(entity);
-        composedCM.childA = A;
-        composedCM.childB = B;
+//        ComposedCM composedCM = Vars.ecs.getMapper(ComposedCM.class).create(entity);
+//        composedCM.childA = A;
+//        composedCM.childB = B;
         compose(A, B, entity);
         return entity;
     }

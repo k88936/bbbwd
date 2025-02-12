@@ -2,7 +2,7 @@ package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.core.Renderer;
-import bbbwd.bubbleworld.game.components.BoxCM;
+import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
@@ -82,7 +82,7 @@ public abstract class Block {
         }
     };
     ////        TransformCM transformCM,
-//        BoxCM boxCM
+//        DynamicBodyCM boxCM
 //    );
     public float size = 0.5f;
     public Shape shape = ShapeBox;
@@ -101,12 +101,12 @@ public abstract class Block {
         TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).create(entity);
         DrawableCM drawableCM = Vars.ecs.getMapper(DrawableCM.class).create(entity);
         drawableCM.renderLogic = renderLogic;
-        BoxCM boxCM = Vars.ecs.getMapper(BoxCM.class).create(entity);
-        boxCM.type = this;
+        DynamicBodyCM dynamicBodyCM = Vars.ecs.getMapper(DynamicBodyCM.class).create(entity);
+        dynamicBodyCM.type = this;
         assert (MathUtils.isEqual(size * 4, MathUtils.round(size * 4)));
         Vars.ecs.getMapper(TransformCM.class).get(entity).transform.set(transform);
-        boxCM.bodyId = shape.buildShape(transform, this);
-        Box2dPlus.b2BodySetRawUserData(boxCM.bodyId, entity);
+        dynamicBodyCM.bodyId = shape.buildShape(transform, this);
+        Box2dPlus.b2BodySetRawUserData(dynamicBodyCM.bodyId, entity);
         return entity;
     }
 
