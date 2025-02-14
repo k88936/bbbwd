@@ -17,8 +17,6 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.*;
 
-import java.util.logging.Logger;
-
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class DesktopInputHandler extends InputHandler {
     Control.SeekResult seekResult;
@@ -231,9 +229,9 @@ public class DesktopInputHandler extends InputHandler {
 //            System.out.println("hit");
 //            return false;
 //        }));
-        Logger.getGlobal().info("touchInorld: " + touchInWorld);
+//        Gdx.app.log("touchInorld: " + touchInWorld);
         seekResult = Control.seekPlaceForBuild(touchInWorld, type, 0);
-        Logger.getGlobal().info("seekResult: " + seekResult);
+//        Gdx.app.log("seekResult: " + seekResult);
 
 
         return false;

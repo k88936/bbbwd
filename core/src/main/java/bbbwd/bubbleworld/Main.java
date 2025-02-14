@@ -6,10 +6,14 @@ import bbbwd.bubbleworld.core.Control;
 import bbbwd.bubbleworld.core.Renderer;
 import bbbwd.bubbleworld.core.Resources;
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.kotcrab.vis.ui.VisUI;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 
 
 /**
@@ -36,6 +40,15 @@ public class Main extends ApplicationAdapter {
         Control.init.run();
         Vars.control.startGame();
         Vars.renderer = new Renderer();
+
+
+
+
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        Runtime runtime = Runtime.getRuntime();
+        Gdx.app.log("System ","OS: " + osBean.getName() + " " + osBean.getVersion() + " " + osBean.getArch() + " CPU: " + runtime.availableProcessors()+ "MaxMemory: " + runtime.maxMemory() / 1024 / 1024 + "MB" +
+            " TotalMemory: " + runtime.totalMemory() / 1024 / 1024 + "MB" +
+            " FreeMemory: " + runtime.freeMemory() / 1024 / 1024 + "MB");
 
         float xb = 4;
         float yb = 4;

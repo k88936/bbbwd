@@ -13,6 +13,7 @@ import bbbwd.bubbleworld.utils.Utils;
 import com.artemis.World;
 import com.artemis.WorldConfiguration;
 import com.artemis.WorldConfigurationBuilder;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.box2d.structs.b2Transform;
 import com.badlogic.gdx.box2d.structs.b2WorldId;
@@ -21,7 +22,6 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.function.Function;
-import java.util.logging.Logger;
 
 public class Control {
     public static Job init;
@@ -51,7 +51,7 @@ public class Control {
             public boolean b2OverlapResultFcn_call(long entity) {
                 int entityId = (int) entity;
 
-                Logger.getGlobal().info("check entity: " + entityId);
+//                Gdx.app.log("check entity: " + entityId);
                 TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entityId);
                 Affine2 inv = new Affine2(transformCM.transform).inv();
                 Vector2 local = new Vector2(position);
@@ -80,14 +80,14 @@ public class Control {
                             return false;
                         });
                         if (ok[0]) {
-                            Logger.getGlobal().info("overlap test failed at: " + lx + ',' + ly);
+//                            Gdx.app.log("overlap test failed at: " + lx + ',' + ly);
                             continue;
                         }
 
                         localGridPos.set(lx, ly);
                         tfm = tmp;
                         min = cur;
-                        Logger.getGlobal().info("renewed best: " + lx + ',' + ly);
+//                     Gdx.app.log("renewed best: " + lx + ',' + ly);
                     }
                 }
 
@@ -183,7 +183,7 @@ public class Control {
                    .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
                     connection.anchorNewBlock, connection.anchorOldBlock,
                     connection.relativeAngle);
-            Logger.getGlobal().info(connection.toString());
+//            Gdx.app.log(connection.toString());
             break;// or many bug
 
         }
