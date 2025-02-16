@@ -21,10 +21,8 @@ public class LParser {
     Array<LStatement> statements = new Array<>();
     char[] chars;
     int pos, line, tok;
-    boolean privileged;
 
-    LParser(String text, boolean privileged) {
-        this.privileged = privileged;
+    LParser(String text) {
         this.chars = text.toCharArray();
     }
 
@@ -140,10 +138,6 @@ public class LParser {
                     st = new LStatements.InvalidStatement();
                 }
 
-                //discard misplaced privileged instructions
-                if (!privileged && st != null && st.privileged()) {
-                    st = new LStatements.InvalidStatement();
-                }
 
                 //store jumps that use labels
                 if (st instanceof LStatements.JumpStatement jump && wasJump) {

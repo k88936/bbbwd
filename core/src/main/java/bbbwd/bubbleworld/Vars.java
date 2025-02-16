@@ -1,9 +1,7 @@
 package bbbwd.bubbleworld;
 
-import bbbwd.bubbleworld.core.ContentLoader;
-import bbbwd.bubbleworld.core.Control;
-import bbbwd.bubbleworld.core.Renderer;
-import bbbwd.bubbleworld.core.Resources;
+import bbbwd.bubbleworld.core.*;
+import bbbwd.bubbleworld.game.systems.logic.GlobalVars;
 import com.artemis.World;
 
 import java.io.IOException;
@@ -21,6 +19,8 @@ public class Vars {
     public static ContentLoader contentLoader;
     public static Renderer renderer;
 
+    public static GameState state;
+    public static GlobalVars logicVars;
     static {
 //        try {
 //            Handler handler = new FileHandler("log.txt");

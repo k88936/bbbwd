@@ -226,17 +226,17 @@ public class LStatements {
     }
 
     //    @RegisterStatement("wait")
-    public static class WaitStatement extends LStatement {
-        public String value = "0.5";
-
-
-        @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.WaitI(builder.var(value));
-        }
-
-
-    }
+//    public static class WaitStatement extends LStatement {
+//        public String value = "0.5";
+//
+//
+//        @Override
+//        public LExecutor.LInstruction build(LAssembler builder) {
+//            return new LExecutor.WaitI(builder.var(value));
+//        }
+//
+//
+//    }
 
     //    @RegisterStatement("stop")
     public static class StopStatement extends LStatement {
@@ -276,7 +276,7 @@ public class LStatements {
 //
 //    }
 
-    //    @RegisterStatement("end")
+//        @RegisterStatement("end")
     public static class EndStatement extends LStatement {
 
 

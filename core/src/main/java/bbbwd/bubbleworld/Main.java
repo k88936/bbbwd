@@ -1,10 +1,8 @@
 package bbbwd.bubbleworld;
 
 import bbbwd.bubbleworld.content.blocks.Blocks;
-import bbbwd.bubbleworld.core.ContentLoader;
-import bbbwd.bubbleworld.core.Control;
-import bbbwd.bubbleworld.core.Renderer;
-import bbbwd.bubbleworld.core.Resources;
+import bbbwd.bubbleworld.core.*;
+import bbbwd.bubbleworld.game.systems.logic.GlobalVars;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
@@ -38,6 +36,8 @@ public class Main extends ApplicationAdapter {
         Vars.contentLoader.load();
         Vars.control = new Control();
         Control.init.run();
+        Vars.logicVars = new GlobalVars();
+        Vars.state = new GameState();
         Vars.control.startGame();
         Vars.renderer = new Renderer();
 

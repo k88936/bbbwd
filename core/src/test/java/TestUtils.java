@@ -2,7 +2,9 @@ import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Block;
 import bbbwd.bubbleworld.core.ContentLoader;
 import bbbwd.bubbleworld.core.Control;
+import bbbwd.bubbleworld.core.GameState;
 import bbbwd.bubbleworld.game.systems.PhysicsSystem;
+import bbbwd.bubbleworld.game.systems.logic.GlobalVars;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.box2d.structs.b2WorldId;
 import com.badlogic.gdx.math.Affine2;
@@ -36,6 +38,9 @@ public class TestUtils {
         Vars.control = new Control();
         Vars.control.startGame();
         worldId = Vars.ecs.getSystem(PhysicsSystem.class).getWorldId();
+
+        Vars.logicVars = new GlobalVars();
+        Vars.state = new GameState();
 
     }
 

@@ -174,12 +174,12 @@ public class GlobalVars {
     public void update() {
         //set up time; note that @time is now only updated once every invocation and directly based off of @tick.
         //having time be based off of user system time was a very bad idea.
-        varTime.numval = state.tick / 60.0 * 1000.0;
-        varTick.numval = state.tick;
+        varTime.numVal = state.tick / 60.0 * 1000.0;
+        varTick.numVal = state.tick;
 
         //shorthands for seconds/minutes spent in save
-        varSecond.numval = state.tick / 60f;
-        varMinute.numval = state.tick / 60f / 60f;
+        varSecond.numVal = state.tick / 60f;
+        varMinute.numVal = state.tick / 60f / 60f;
 
 //        //wave state
 //        varWave.numval = state.wave;
@@ -241,7 +241,7 @@ public class GlobalVars {
 
     /** Sets a global variable by name. */
     public void set(String name, double value) {
-        get(name, true).numval = value;
+        get(name, true).numVal = value;
     }
 
     /** Adds a constant value by name. */
@@ -260,11 +260,11 @@ public class GlobalVars {
         LVar var = new LVar(name);
         var.constant = true;
         if (value instanceof Number num) {
-            var.isobj = false;
-            var.numval = num.doubleValue();
+            var.isObj = false;
+            var.numVal = num.doubleValue();
         } else {
-            var.isobj = true;
-            var.objval = value;
+            var.isObj = true;
+            var.objVal = value;
         }
 
         vars.put(name, var);

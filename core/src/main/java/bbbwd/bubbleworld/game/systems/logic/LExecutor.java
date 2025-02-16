@@ -4,90 +4,63 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntFloatMap;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.LongArray;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 
-public class LExecutor{
+public class LExecutor {
     public static final int maxInstructions = 1000;
 
     public static final int
-    maxGraphicsBuffer = 256,
-    maxDisplayBuffer = 1024,
-    maxTextBuffer = 400;
-
+            maxGraphicsBuffer = 256,
+            maxDisplayBuffer = 1024,
+            maxTextBuffer = 400;
     public LInstruction[] instructions = {};
     /** Non-constant variables used for network sync */
-    public LVar[] vars = {};
-
-    public LVar counter, unit, thisv, ipt;
-
-    public int[] binds;
-    public boolean yield;
-
-    public LongArray graphicsBuffer = new LongArray();
-    public StringBuilder textBuffer = new StringBuilder();
-//    public Building[] links = {};
-//    public @Nullable LogicBuild build;
-    public IntSet linkIds = new IntSet();
-//    public Team team = Team.derelict;
-    public boolean privileged = false;
-
-    //yes, this is a minor memory leak, but it's probably not significant enough to matter
-    protected static IntFloatMap unitTimeouts = new IntFloatMap();
-
-    static{
-//        Events.on(ResetEvent.class, e -> unitTimeouts.clear());
-    }
-
-//    boolean timeoutDone(Unit unit, float delay){
-//        return Time.time >= unitTimeouts.get(unit.id) + delay;
-//    }
-
-//    void updateTimeout(Unit unit){
-//        unitTimeouts.put(unit.id, Time.time);
-//    }
-
-    public boolean initialized(){
+    protected LVar[] vars = {};
+    protected LVar counter, ipt;
+    protected boolean yield;
+//    public LongArray graphicsBuffer = new LongArray();
+    protected StringBuilder textBuffer = new StringBuilder();
+    public boolean initialized() {
         return instructions.length > 0;
     }
 
     /** Runs a single instruction. */
-    public void runOnce(){
+    public void runOnce() {
         //reset to start
-        if(counter.numval >= instructions.length || counter.numval < 0){
-            counter.numval = 0;
+        if (counter.numVal >= instructions.length || counter.numVal < 0) {
+            counter.numVal = 0;
         }
 
-        if(counter.numval < instructions.length){
-            instructions[(int)(counter.numval++)].run(this);
+        if (counter.numVal < instructions.length) {
+            instructions[(int) (counter.numVal++)].run(this);
         }
     }
 
     /** Loads with a specified assembler. Resets all variables. */
-    public void load(LAssembler builder){
+    public void load(LAssembler builder) {
         Array<LVar> lVars = new Array<>(true, builder.vars.size);
         for (LVar value : builder.vars.values()) {
-            if(value.constant)continue;
+            if (value.constant) continue;
             lVars.add(value);
         }
         vars = lVars.toArray(LVar.class);
-        for(int i = 0; i < vars.length; i++){
+        for (int i = 0; i < vars.length; i++) {
             vars[i].id = i;
         }
 
         instructions = builder.instructions;
         counter = builder.getVar("@counter");
-        unit = builder.getVar("@unit");
-        thisv = builder.getVar("@this");
+//        unit = builder.getVar("@unit");
+//        thisv = builder.getVar("@this");
 //        ipt = builder.putConst("@ipt", build != null ? build.ipt : 0);todo
     }
 
     //region utility
 
     /** @return a Var from this processor. May be null if out of bounds. */
-    public @Nullable LVar optionalVar(int index){
+    public LVar optionalVar(int index) {
         return index < 0 || index >= vars.length ? null : vars[index];
     }
 
@@ -95,7 +68,7 @@ public class LExecutor{
 
     //region instruction types
 
-    public interface LInstruction{
+    public interface LInstruction {
         void run(LExecutor exec);
     }
 
@@ -518,20 +491,18 @@ public class LExecutor{
 //        }
 //    }
 //
-    public static class ReadI implements LInstruction{
-        public LVar target, position, output;
 
-        public ReadI(LVar target, LVar position, LVar output){
+    public static record ReadI(LVar target, LVar position, LVar output) implements LInstruction {
+
+        public ReadI(LVar target, LVar position, LVar output) {
             this.target = target;
             this.position = position;
             this.output = output;
         }
 
-        public ReadI(){
-        }
 
         @Override
-        public void run(LExecutor exec){
+        public void run(LExecutor exec) {
             int address = position.numi();
 //            Building from = target.building();
 //
@@ -541,20 +512,17 @@ public class LExecutor{
         }
     }
 
-    public static class WriteI implements LInstruction{
-        public LVar target, position, value;
+    public static record WriteI(LVar target, LVar position, LVar value) implements LInstruction {
 
-        public WriteI(LVar target, LVar position, LVar value){
+        public WriteI(LVar target, LVar position, LVar value) {
             this.target = target;
             this.position = position;
             this.value = value;
         }
 
-        public WriteI(){
-        }
 
         @Override
-        public void run(LExecutor exec){
+        public void run(LExecutor exec) {
             int address = position.numi();
 //            Building from = target.building();
 //
@@ -563,6 +531,7 @@ public class LExecutor{
 //            }
         }
     }
+
 
 //    public static class SenseI implements LInstruction{
 //        public LVar from, to, type;
@@ -713,75 +682,69 @@ public class LExecutor{
 //        }
 //    }
 
-    public static class SetI implements LInstruction{
-        public LVar from, to;
+    public static record SetI(LVar from, LVar to) implements LInstruction {
 
-        public SetI(LVar from, LVar to){
+        public SetI(LVar from, LVar to) {
             this.from = from;
             this.to = to;
         }
 
-        SetI(){}
-
         @Override
-        public void run(LExecutor exec){
-            if(!to.constant){
-                if(from.isobj){
-                    if(to != exec.counter){
-                        to.objval = from.objval;
-                        to.isobj = true;
+        public void run(LExecutor exec) {
+            if (!to.constant) {
+                if (from.isObj) {
+                    if (to != exec.counter) {
+                        to.objVal = from.objVal;
+                        to.isObj = true;
                     }
-                }else{
-                    to.numval = LVar.invalid(from.numval) ? 0 : from.numval;
-                    to.isobj = false;
+                } else {
+                    to.numVal = LVar.invalid(from.numVal) ? 0 : from.numVal;
+                    to.isObj = false;
                 }
             }
         }
     }
 
-    public static class OpI implements LInstruction{
-        public LogicOp op = LogicOp.add;
-        public LVar a, b, dest;
+    public static record OpI(LogicOp op, LVar a, LVar b, LVar dest) implements LInstruction {
 
-        public OpI(LogicOp op, LVar a, LVar b, LVar dest){
+        public OpI(LogicOp op, LVar a, LVar b, LVar dest) {
             this.op = op;
             this.a = a;
             this.b = b;
             this.dest = dest;
         }
 
-        OpI(){}
-
         @Override
-        public void run(LExecutor exec){
-            if(op == LogicOp.strictEqual){
-                dest.setnum(a.isobj == b.isobj && ((a.isobj && Objects.equals(a.objval, b.objval)) || (!a.isobj && a.numval == b.numval)) ? 1 : 0);
-            }else if(op.unary){
-                dest.setnum(op.function1.get(a.num()));
-            }else{
-                if(op.objFunction2 != null && a.isobj && b.isobj){
+        public void run(LExecutor exec) {
+            if (op == LogicOp.strictEqual) {
+                dest.setNum(a.isObj == b.isObj && ((a.isObj && Objects.equals(a.objVal, b.objVal)) || (!a.isObj && a.numVal == b.numVal)) ? 1 : 0);
+            } else if (op.unary) {
+                dest.setNum(op.function1.get(a.num()));
+            } else {
+                if (op.objFunction2 != null && a.isObj && b.isObj) {
                     //use object function if both are objects
-                    dest.setnum(op.objFunction2.get(a.obj(), b.obj()));
-                }else{
+                    dest.setNum(op.objFunction2.get(a.obj(), b.obj()));
+                } else {
                     //otherwise use the numeric function
-                    dest.setnum(op.function2.get(a.num(), b.num()));
+                    dest.setNum(op.function2.get(a.num(), b.num()));
                 }
 
             }
         }
     }
 
-    public static class EndI implements LInstruction{
+    public record EndI() implements LInstruction {
 
         @Override
-        public void run(LExecutor exec){
-            exec.counter.numval = exec.instructions.length;
+        public void run(LExecutor exec) {
+            exec.counter.numVal = exec.instructions.length;
         }
     }
 
-    public static class NoopI implements LInstruction{
+    public record NoopI() implements LInstruction {
         @Override
-        public void run(LExecutor exec){}
+        public void run(LExecutor exec) {
+        }
     }
 
 //    public static class DrawI implements LInstruction{
@@ -925,72 +888,64 @@ public class LExecutor{
 //        }
 //    }
 
-    public static class PrintI implements LInstruction{
-        public LVar value;
+    public record PrintI(LVar value) implements LInstruction {
 
-        public PrintI(LVar value){
-            this.value = value;
-        }
 
-        PrintI(){}
-
-        @Override
-        public void run(LExecutor exec){
-
-            if(exec.textBuffer.length() >= maxTextBuffer) return;
-
-            //this should avoid any garbage allocation
-            if(value.isobj){
-                String strValue = toString(value.objval);
-
-                exec.textBuffer.append(strValue);
-            }else{
-                //display integer version when possible
-                if(Math.abs(value.numval - Math.round(value.numval)) < 0.00001){
-                    exec.textBuffer.append(Math.round(value.numval));
-                }else{
-                    exec.textBuffer.append(value.numval);
-                }
-            }
-        }
-
-        public static String toString(Object obj){
+        public static String toString(Object obj) {
             return
-                obj == null ? "null" :
-                obj instanceof String s ? s :
+                    obj == null ? "null" :
+                            obj instanceof String s ? s :
 //                obj instanceof MappableContent content ? content.name :
 //                obj instanceof Content ? "[content]" :
 //                obj instanceof Building build ? build.block.name :
 //                obj instanceof Unit unit ? unit.type.name :
 //                obj instanceof Enum<?> e ? e.name() :
 //                obj instanceof Team team ? team.name :
-                "[object]";
+                                    "[object]";
+        }
+
+        @Override
+        public void run(LExecutor exec) {
+
+            if (exec.textBuffer.length() >= maxTextBuffer) return;
+
+            //this should avoid any garbage allocation
+            if (value.isObj) {
+                String strValue = toString(value.objVal);
+
+                exec.textBuffer.append(strValue);
+            } else {
+                //display integer version when possible
+                if (Math.abs(value.numVal - Math.round(value.numVal)) < 0.00001) {
+                    exec.textBuffer.append(Math.round(value.numVal));
+                } else {
+                    exec.textBuffer.append(value.numVal);
+                }
+            }
         }
     }
 
-    public static class FormatI implements LInstruction{
-        public LVar value;
+    public record FormatI(LVar value) implements LInstruction {
 
-        public FormatI(LVar value){
+        public FormatI(LVar value) {
             this.value = value;
         }
 
-        FormatI(){}
 
         @Override
-        public void run(LExecutor exec){
+        public void run(LExecutor exec) {
 
-            if(exec.textBuffer.length() >= maxTextBuffer) return;
+            if (exec.textBuffer.length() >= maxTextBuffer) return;
 
             int placeholderIndex = -1;
             int placeholderNumber = 10;
 
-            for(int i = 0; i < exec.textBuffer.length(); i++){
-                if(exec.textBuffer.charAt(i) == '{' && exec.textBuffer.length() - i > 2){
+            for (int i = 0; i < exec.textBuffer.length(); i++) {
+                if (exec.textBuffer.charAt(i) == '{' && exec.textBuffer.length() - i > 2) {
                     char numChar = exec.textBuffer.charAt(i + 1);
 
-                    if(numChar >= '0' && numChar <= '9' && exec.textBuffer.charAt(i + 2) == '}'){
-                        if(numChar - '0' < placeholderNumber){
+                    if (numChar >= '0' && numChar <= '9' && exec.textBuffer.charAt(i + 2) == '}') {
+                        if (numChar - '0' < placeholderNumber) {
                             placeholderNumber = numChar - '0';
                             placeholderIndex = i;
                         }
@@ -998,36 +953,26 @@ public class LExecutor{
                 }
             }
 
-            if(placeholderIndex == -1) return;
+            if (placeholderIndex == -1) return;
 
             //this should avoid any garbage allocation
-            if(value.isobj){
-                String strValue = PrintI.toString(value.objval);
+            if (value.isObj) {
+                String strValue = PrintI.toString(value.objVal);
 
                 exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, strValue);
-            }else{
+            } else {
                 //display integer version when possible
-                if(Math.abs(value.numval - Math.round(value.numval)) < 0.00001){
-                    exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, Math.round(value.numval) + "");
-                }else{
-                    exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, value.numval + "");
+                if (Math.abs(value.numVal - Math.round(value.numVal)) < 0.00001) {
+                    exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, Math.round(value.numVal) + "");
+                } else {
+                    exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, value.numVal + "");
                 }
             }
         }
     }
-
-    public static class PrintFlushI implements LInstruction{
-        public LVar target;
-
-        public PrintFlushI(LVar target){
-            this.target = target;
-        }
-
-        public PrintFlushI(){
-        }
-
+    public record PrintFlushI(LVar target) implements LInstruction {
         @Override
-        public void run(LExecutor exec){
+        public void run(LExecutor exec) {
 
 //            if(target.building() instanceof MessageBuild d && (exec.privileged || (d.team == exec.team && !d.block.privileged))){
 //
@@ -1039,76 +984,35 @@ public class LExecutor{
 
         }
     }
-
-    public static class JumpI implements LInstruction{
-        public ConditionOp op = ConditionOp.notEqual;
-        public LVar value, compare;
-        public int address;
-
-        public JumpI(ConditionOp op, LVar value, LVar compare, int address){
-            this.op = op;
-            this.value = value;
-            this.compare = compare;
-            this.address = address;
-        }
-
-        public JumpI(){
-        }
-
+    public record JumpI(ConditionOp op, LVar value,LVar compare,int address) implements LInstruction {
         @Override
-        public void run(LExecutor exec){
-            if(address != -1){
+        public void run(LExecutor exec) {
+            if (address != -1) {
                 LVar va = value;
                 LVar vb = compare;
                 boolean cmp;
-
-                if(op == ConditionOp.strictEqual){
-                    cmp = va.isobj == vb.isobj && ((va.isobj && va.objval == vb.objval) || (!va.isobj && va.numval == vb.numval));
-                }else if(op.objFunction != null && va.isobj && vb.isobj){
+                if (op == ConditionOp.strictEqual) {
+                    cmp = va.isObj == vb.isObj && ((va.isObj && va.objVal == vb.objVal) || (!va.isObj && va.numVal == vb.numVal));
+                } else if (op.objFunction != null && va.isObj && vb.isObj) {
                     //use object function if both are objects
                     cmp = op.objFunction.get(value.obj(), compare.obj());
-                }else{
+                } else {
                     cmp = op.function.get(value.num(), compare.num());
                 }
-
-                if(cmp){
-                    exec.counter.numval = address;
+                if (cmp) {
+                    exec.counter.numVal = address;
                 }
             }
         }
     }
 
-    public static class WaitI implements LInstruction{
-        public LVar value;
 
-        public float curTime;
-
-        public WaitI(LVar value){
-            this.value = value;
-        }
-
-        public WaitI(){
-        }
+    public record StopI() implements LInstruction {
 
         @Override
-        public void run(LExecutor exec){
-            if(curTime >= value.num()){
-                curTime = 0f;
-            }else{
-                //skip back to self.
-                exec.counter.numval --;
-                exec.yield = true;
-                curTime += 1f / 60f;
-            }
-        }
-    }
-
-    public static class StopI implements LInstruction{
-
-        @Override
-        public void run(LExecutor exec){
+        public void run(LExecutor exec) {
             //skip back to self.
-            exec.counter.numval --;
+            exec.counter.numVal--;
             exec.yield = true;
         }
     }

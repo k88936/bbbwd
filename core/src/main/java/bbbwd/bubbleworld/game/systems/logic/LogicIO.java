@@ -7,24 +7,27 @@ public class LogicIO {
 //    public static Array<Prov<LStatement>> allStatements = Array.with(LStatements.InvalidStatement::new, LStatements.ReadStatement::new, LStatements.WriteStatement::new, LStatements.DrawStatement::new, LStatements.PrintStatement::new, LStatements.FormatStatement::new, LStatements.DrawFlushStatement::new, LStatements.PrintFlushStatement::new, LStatements.GetLinkStatement::new, LStatements.ControlStatement::new, LStatements.RadarStatement::new, LStatements.SensorStatement::new, LStatements.SetStatement::new, LStatements.OperationStatement::new, LStatements.WaitStatement::new, LStatements.StopStatement::new, LStatements.LookupStatement::new, LStatements.PackColorStatement::new, LStatements.EndStatement::new, LStatements.JumpStatement::new, LStatements.UnitBindStatement::new, LStatements.UnitControlStatement::new, LStatements.UnitRadarStatement::new, LStatements.UnitLocateStatement::new, LStatements.GetBlockStatement::new, LStatements.SetBlockStatement::new, LStatements.SpawnUnitStatement::new, LStatements.ApplyStatusStatement::new, LStatements.WeatherSenseStatement::new, LStatements.WeatherSetStatement::new, LStatements.SpawnWaveStatement::new, LStatements.SetRuleStatement::new, LStatements.FlushMessageStatement::new, LStatements.CutsceneStatement::new, LStatements.EffectStatement::new, LStatements.ExplosionStatement::new, LStatements.SetRateStatement::new, LStatements.FetchStatement::new, LStatements.SyncStatement::new, LStatements.ClientDataStatement::new, LStatements.GetFlagStatement::new, LStatements.SetFlagStatement::new, LStatements.SetPropStatement::new, LStatements.PlaySoundStatement::new, LStatements.SetMarkerStatement::new, LStatements.MakeMarkerStatement::new, LStatements.LocalePrintStatement::new);
 
     public static LStatement read(String[] tokens, int length) {
-        if(tokens[0].equals("noop")) {
-            LStatements.InvalidStatement result = new LStatements.InvalidStatement();
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("read")) {
-            LStatements.ReadStatement result = new LStatements.ReadStatement();
-            if(length > 1) result.output = (tokens[1]);
-            if(length > 2) result.target = (tokens[2]);
-            if(length > 3) result.address = (tokens[3]);
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("write")) {
-            LStatements.WriteStatement result = new LStatements.WriteStatement();
-            if(length > 1) result.input = (tokens[1]);
-            if(length > 2) result.target = (tokens[2]);
-            if(length > 3) result.address = (tokens[3]);
-            result.afterRead();
-            return result;
+        switch (tokens[0]) {
+            case "noop" -> {
+                LStatements.InvalidStatement result = new LStatements.InvalidStatement();
+                result.afterRead();
+                return result;
+            }
+            case "read" -> {
+                LStatements.ReadStatement result = new LStatements.ReadStatement();
+                if (length > 1) result.output = (tokens[1]);
+                if (length > 2) result.target = (tokens[2]);
+                if (length > 3) result.address = (tokens[3]);
+                result.afterRead();
+                return result;
+            }
+            case "write" -> {
+                LStatements.WriteStatement result = new LStatements.WriteStatement();
+                if (length > 1) result.input = (tokens[1]);
+                if (length > 2) result.target = (tokens[2]);
+                if (length > 3) result.address = (tokens[3]);
+                result.afterRead();
+                return result;
 //        } else if(tokens[0].equals("draw")) {
 //            LStatements.DrawStatement result = new LStatements.DrawStatement();
 ////            if(length > 1) result.type = mindustry.world.blocks.logic.LogicDisplay.GraphicsType.valueOf(tokens[1]);todo
@@ -36,16 +39,18 @@ public class LogicIO {
 //            if(length > 7) result.p4 = (tokens[7]);
 //            result.afterRead();
 //            return result;
-        } else if(tokens[0].equals("print")) {
-            LStatements.PrintStatement result = new LStatements.PrintStatement();
-            if(length > 1) result.value = (tokens[1]);
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("format")) {
-            LStatements.FormatStatement result = new LStatements.FormatStatement();
-            if(length > 1) result.value = (tokens[1]);
-            result.afterRead();
-            return result;
+            }
+            case "print" -> {
+                LStatements.PrintStatement result = new LStatements.PrintStatement();
+                if (length > 1) result.value = (tokens[1]);
+                result.afterRead();
+                return result;
+            }
+            case "format" -> {
+                LStatements.FormatStatement result = new LStatements.FormatStatement();
+                if (length > 1) result.value = (tokens[1]);
+                result.afterRead();
+                return result;
 //        } else if(tokens[0].equals("drawflush")) {
 //            LStatements.DrawFlushStatement result = new LStatements.DrawFlushStatement();
 //            if(length > 1) result.target = (tokens[1]);
@@ -90,29 +95,27 @@ public class LogicIO {
 //            if(length > 3) result.type = (tokens[3]);
 //            result.afterRead();
 //            return result;
-        } else if(tokens[0].equals("set")) {
-            LStatements.SetStatement result = new LStatements.SetStatement();
-            if(length > 1) result.to = (tokens[1]);
-            if(length > 2) result.from = (tokens[2]);
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("op")) {
-            LStatements.OperationStatement result = new LStatements.OperationStatement();
-            if(length > 1) result.op = LogicOp.valueOf(tokens[1]);
-            if(length > 2) result.dest = (tokens[2]);
-            if(length > 3) result.a = (tokens[3]);
-            if(length > 4) result.b = (tokens[4]);
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("wait")) {
-            LStatements.WaitStatement result = new LStatements.WaitStatement();
-            if(length > 1) result.value = (tokens[1]);
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("stop")) {
-            LStatements.StopStatement result = new LStatements.StopStatement();
-            result.afterRead();
-            return result;
+            }
+            case "set" -> {
+                LStatements.SetStatement result = new LStatements.SetStatement();
+                if (length > 1) result.to = (tokens[1]);
+                if (length > 2) result.from = (tokens[2]);
+                result.afterRead();
+                return result;
+            }
+            case "op" -> {
+                LStatements.OperationStatement result = new LStatements.OperationStatement();
+                if (length > 1) result.op = LogicOp.valueOf(tokens[1]);
+                if (length > 2) result.dest = (tokens[2]);
+                if (length > 3) result.a = (tokens[3]);
+                if (length > 4) result.b = (tokens[4]);
+                result.afterRead();
+                return result;
+            }
+            case "stop" -> {
+                LStatements.StopStatement result = new LStatements.StopStatement();
+                result.afterRead();
+                return result;
 //        } else if(tokens[0].equals("lookup")) {
 //            LStatements.LookupStatement result = new LStatements.LookupStatement();
 ////            if(length > 1) result.type = mindustry.ctype.ContentType.valueOf(tokens[1]);todo
@@ -129,18 +132,20 @@ public class LogicIO {
 //            if(length > 5) result.a = (tokens[5]);
 //            result.afterRead();
 //            return result;
-        } else if(tokens[0].equals("end")) {
-            LStatements.EndStatement result = new LStatements.EndStatement();
-            result.afterRead();
-            return result;
-        } else if(tokens[0].equals("jump")) {
-            LStatements.JumpStatement result = new LStatements.JumpStatement();
-            if(length > 1) result.destIndex = java.lang.Integer.valueOf(tokens[1]);
-            if(length > 2) result.op = ConditionOp.valueOf(tokens[2]);
-            if(length > 3) result.value = (tokens[3]);
-            if(length > 4) result.compare = (tokens[4]);
-            result.afterRead();
-            return result;
+            }
+            case "end" -> {
+                LStatements.EndStatement result = new LStatements.EndStatement();
+                result.afterRead();
+                return result;
+            }
+            case "jump" -> {
+                LStatements.JumpStatement result = new LStatements.JumpStatement();
+                if (length > 1) result.destIndex = Integer.parseInt(tokens[1]);
+                if (length > 2) result.op = ConditionOp.valueOf(tokens[2]);
+                if (length > 3) result.value = (tokens[3]);
+                if (length > 4) result.compare = (tokens[4]);
+                result.afterRead();
+                return result;
 //        } else if(tokens[0].equals("ubind")) {
 //            LStatements.UnitBindStatement result = new LStatements.UnitBindStatement();
 //            if(length > 1) result.type = (tokens[1]);
@@ -363,6 +368,7 @@ public class LogicIO {
 //            if(length > 1) result.value = (tokens[1]);
 //            result.afterRead();
 //            return result;
+            }
         }
         return null;
     }
@@ -478,10 +484,6 @@ public class LogicIO {
             out.append(((LStatements.OperationStatement)obj).a);
             out.append(" ");
             out.append(((LStatements.OperationStatement)obj).b);
-        } else if(obj.getClass() == LStatements.WaitStatement.class) {
-            out.append("wait");
-            out.append(" ");
-            out.append(((LStatements.WaitStatement)obj).value);
 //        } else if(obj.getClass() == LStatements.StopStatement.class) {
 //            out.append("stop");
 //        } else if(obj.getClass() == LStatements.LookupStatement.class) {

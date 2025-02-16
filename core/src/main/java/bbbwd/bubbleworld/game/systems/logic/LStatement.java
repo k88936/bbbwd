@@ -16,8 +16,7 @@ public abstract class LStatement{
     public LStatement copy(){
         StringBuilder build = new StringBuilder();
         write(build);
-        //assume privileged when copying, because there's no way privileged instructions can appear here anyway, and the instructions get validated on load anyway
-        Array<LStatement> read = LAssembler.read(build.toString(), true);
+        Array<LStatement> read = LAssembler.read(build.toString());
         return read.size == 0 ? null : read.first();
     }
 
@@ -25,20 +24,10 @@ public abstract class LStatement{
         return false;
     }
 
-    /** Privileged instructions are only allowed in world processors. */
-    public boolean privileged(){
-        return false;
-    }
-
-    /** If true, this statement is considered useless with privileged processors and is not allowed in them. */
-    public boolean nonPrivileged(){
-        return false;
-    }
-
     //protected methods are only for internal UI layout utilities
 
     protected String sanitize(String value){
-        if(value.length() == 0){
+        if(value.isEmpty()){
             return "";
         }else if(value.length() == 1){
             if(value.charAt(0) == '"' || value.charAt(0) == ';' || value.charAt(0) == ' '){

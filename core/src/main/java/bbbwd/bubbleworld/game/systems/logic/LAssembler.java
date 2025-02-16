@@ -6,7 +6,6 @@ import bbbwd.bubbleworld.utils.func.Func;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.OrderedMap;
-import org.jetbrains.annotations.Nullable;
 
 
 /** "Compiles" a sequence of statements into instructions. */
@@ -23,19 +22,18 @@ public class LAssembler{
 
     public LAssembler(){
         //instruction counter
-        putVar("@counter").isobj = false;
+        putVar("@counter").isObj = false;
         //currently controlled unit
         putConst("@unit", null);
         //reference to self
         putConst("@this", null);
     }
 
-    public static LAssembler assemble(String data, boolean privileged){
+    public static LAssembler assemble(String data){
         LAssembler asm = new LAssembler();
 
-        Array<LStatement> st = read(data, privileged);
+        Array<LStatement> st = read(data);
 
-        asm.privileged = privileged;
 
         Array<LExecutor.LInstruction> insts = new Array<>();
         for (LStatement lStatement : st) {
@@ -58,10 +56,10 @@ public class LAssembler{
     }
 
     /** Parses a sequence of statements from a string. */
-    public static Array<LStatement> read(String text, boolean privileged){
+    public static Array<LStatement> read(String text){
         //don't waste time parsing null/empty text
         if(text == null || text.isEmpty()) return new Array<>();
-        return new LParser(text, privileged).parse();
+        return new LParser(text).parse();
     }
 
     /** @return a variable by name.
@@ -113,12 +111,12 @@ public class LAssembler{
     public LVar putConst(String name, Object value){
         LVar var = putVar(name);
         if(value instanceof Number number){
-            var.isobj = false;
-            var.numval = number.doubleValue();
-            var.objval = null;
+            var.isObj = false;
+            var.numVal = number.doubleValue();
+            var.objVal = null;
         }else{
-            var.isobj = true;
-            var.objval = value;
+            var.isObj = true;
+            var.objVal = value;
         }
         var.constant = true;
         return var;
@@ -131,13 +129,12 @@ public class LAssembler{
         }else{
             //variables are null objects by default
             LVar var = new LVar(name);
-            var.isobj = true;
+            var.isObj = true;
             vars.put(name, var);
             return var;
         }
     }
 
-    @Nullable
     public LVar getVar(String name){
         return vars.get(name);
     }
