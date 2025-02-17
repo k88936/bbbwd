@@ -1,6 +1,4 @@
 {
-  "width": 64,
-  "height": 64 ,
   "layers": [
     {
       "src": "hinge_l2.png",
@@ -10,12 +8,7 @@
     {
       "src": "hinge_l1.png",
       "texture": "iron_4.png"
-    },
-
-
-    {
-      "src": "hinge_l3.png",
-      "texture": "iron_17.png"
     }
+
   ]
 }
