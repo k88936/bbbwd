@@ -84,11 +84,11 @@ public class Renderer {
                 Vector2 project = viewport.project(light.getPosition().cpy());
                 lightShader.setUniformf("u_lightpos", project.x / viewport.getScreenWidth(), project.y / viewport.getScreenHeight(), 0.5f);
                 lightShader.setUniformf("u_intensity", 10);
-                lightShader.setUniformf("u_falloff", 0, 0, 0.005f);
+                lightShader.setUniformf("u_falloff", 0, 0, 0.01f);
             }
         };
         rayHandler.setBlur(true);
-//        rayHandler.setBlurNum(2);
+        rayHandler.setBlurNum(2);
         rayHandler.setCulling(true);
         rayHandler.setLightShader(lightShader);
         rayHandler.setLightMapRendering(true);

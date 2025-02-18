@@ -130,7 +130,7 @@ public abstract class Block {
         b2BodyId buildShape(Affine2 transform, Block block);
 
         default void overlap(Block block, Affine2 transform, Box2dPlus.EntityCallback callback) {
-            overlap(block, 1, transform, callback);
+            overlap(block, 0.999f, transform, callback);
         }
 
         void overlap(Block block, float tolerance, Affine2 transform, Box2dPlus.EntityCallback callback);

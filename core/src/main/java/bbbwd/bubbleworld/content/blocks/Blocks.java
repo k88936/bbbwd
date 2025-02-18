@@ -26,7 +26,8 @@ public class Blocks {
             @Override
             void config() {
                 connectFilter = (newBlock, rx, ry) -> false;
-                shape = ShapePolygon("test_block");
+                shape=ShapeBox;
+//                shape = ShapePolygon("test_block");
             }
         };
         testBlock_OnlyConnectX = new Block() {
