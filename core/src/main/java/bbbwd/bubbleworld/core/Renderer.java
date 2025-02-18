@@ -73,7 +73,7 @@ public class Renderer {
                 lightShader.setUniformi("u_normals", 1);
 //                lightShader.setUniformf("u_resolution", 320, 240);
                 lightShader.setUniformf("u_resolution", viewport.getScreenWidth(), viewport.getScreenHeight());
-                lightShader.setUniformf("u_world",viewport.getWorldWidth(), viewport.getWorldHeight());
+                lightShader.setUniformf("u_world", viewport.getWorldWidth(), viewport.getWorldHeight());
 //                Gdx.app.log("LightShader", "u_resolution: " + viewport.getScreenWidth() + " " + viewport.getScreenHeight());
 //                Gdx.app.log("LightShader", "u_world: " + viewport.getWorldWidth() + " " + viewport.getWorldHeight());
             }
@@ -105,7 +105,6 @@ public class Renderer {
 
 
     public void render() {
-//        pointLight.setPosition(pointLight.getPosition().rotateDeg(0.5f));
 
         float cameraX = camera.position.x;
         float cameraY = camera.position.y;
@@ -133,6 +132,7 @@ public class Renderer {
         });
         getViewport().apply();
 
+//        if(true) return;
         normalBatch.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
 
@@ -140,7 +140,6 @@ public class Renderer {
         Gdx.gl.glClearColor(0.5f, 0.5f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         normalBatch.begin();
-        normalBatch.enableBlending();
 
         renderNormal(backgroundEntities);
         renderNormal(blockBottomEntities);
@@ -150,7 +149,6 @@ public class Renderer {
         renderNormal(effectEntities);
         renderNormal(topEntities);
 
-
         normalBatch.end();
         normalFbo.end();
 
@@ -159,12 +157,6 @@ public class Renderer {
         batch.setShader(null);
         batch.setColor(Color.WHITE);
         batch.enableBlending();
-//        batch.draw(bg, -3, -2, 6, 4);
-//        for (int i = -20; i < 20; i += 2) {
-//            for (int j = -20; j < 20; j += 2) {
-//                getBatch().draw(ttttt, i, j, 2, 2);
-//            }
-//        }
         // render all entities
         renderEntities(backgroundEntities);
         renderEntities(blockBottomEntities);
@@ -174,17 +166,7 @@ public class Renderer {
         renderEntities(effectEntities);
         renderEntities(topEntities);
 
-//        batch.draw(normals, 0, 0, // x, y
-//            viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, // origx, origy
-//            viewport.getWorldWidth(), viewport.getWorldHeight(), // width, height
-//            1, 1, // scale x, y
-//            0,// rotation
-//            0, 0, normals.getWidth(), normals.getHeight(), // tex dimensions
-//            false, true); // flip x, y
         batch.end();
-//        lightShader.bind();
-//        lightShader.setUniformi("u_normals", 1);
-//        lightShader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         /** BOX2D LIGHT STUFF BEGIN */
         rayHandler.setCombinedMatrix(camera);
         rayHandler.update();
@@ -219,6 +201,7 @@ public class Renderer {
 
 
     public void resize(int width, int height) {
+        if (width * height == 0) return;
         getViewport().update(width, height);
         if (normalFbo != null) normalFbo.dispose();
         normalFbo = new FrameBuffer(Pixmap.Format.RGB565, width, height, false);
