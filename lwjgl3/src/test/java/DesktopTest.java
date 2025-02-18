@@ -8,6 +8,7 @@ import bbbwd.bubbleworld.input.DesktopInputHandler;
 import bbbwd.bubbleworld.lwjgl3.Lwjgl3Launcher;
 import bbbwd.bubbleworld.lwjgl3.StartupHelper;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.math.Affine2;
 
@@ -18,6 +19,8 @@ public class DesktopTest {
         Control.init = () -> {
             Vars.control.inputHandler = new DesktopInputHandler();
         };
+        Lwjgl3ApplicationConfiguration defaultConfiguration = Lwjgl3Launcher.getDefaultConfiguration();
+        defaultConfiguration.setTitle("test");
         new Lwjgl3Application(new Main() {
             @Override
             public void create() {
@@ -41,6 +44,6 @@ public class DesktopTest {
                 deviceCM.memory[1] = -0.2;
 
             }
-        }, Lwjgl3Launcher.getDefaultConfiguration());
+        }, defaultConfiguration);
     }
 }
