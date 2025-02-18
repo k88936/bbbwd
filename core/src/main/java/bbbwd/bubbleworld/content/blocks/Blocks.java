@@ -46,18 +46,20 @@ public class Blocks {
                     @Override
                     void config() {
                         connectFilter = (newBlock, rx, ry) -> ry > 0;
-                        final TextureRegion textureA = Vars.resources.getTexureRegion("hinge_l");
+                        final TextureRegion texture = Vars.resources.getTexureRegion("hinge_l");
+                        final TextureRegion normal = Vars.resources.getTexureRegion("hinge_l.normal");
                         shape = ShapePolygon("hinge_l");
-                        renderLogic = new Renderer.RenderLogic() {
+                        renderLogic = new Renderer.BlockLowerRenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
                                 tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(textureA, 2 * size, 2 * size, tmpAffine2);
+                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
                             }
 
                             @Override
                             public void renderNormal(Affine2 tfm, Batch bth) {
-
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
                             }
                         };
 
@@ -67,20 +69,21 @@ public class Blocks {
                 B = new Block() {
                     @Override
                     void config() {
-                        final TextureRegion textureB = Vars.resources.getTexureRegion("hinge_u");
+                        final TextureRegion texture = Vars.resources.getTexureRegion("hinge_u");
+                        final TextureRegion normal = Vars.resources.getTexureRegion("hinge_u.normal");
                         shape = ShapePolygon("hinge_u");
-                        connectFilter = (newBlock, rx, ry) -> ry <0;
+                        connectFilter = (newBlock, rx, ry) -> ry < 0;
                         renderLogic = new Renderer.RenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
                                 tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(textureB, 2 * size, 2 * size, tmpAffine2);
+                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
                             }
 
                             @Override
                             public void renderNormal(Affine2 tfm, Batch bth) {
                                 tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(textureB, 2 * size, 2 * size, tmpAffine2);
+                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
                             }
                         };
                     }
@@ -91,13 +94,14 @@ public class Blocks {
         saw = new RevoluteBlock() {
             @Override
             void config() {
-                A=new Block() {
+                A = new Block() {
                     @Override
                     void config() {
-                        connectFilter=(newBlock, rx, ry)->true;
-                        shape= ShapeCircle;
+                        connectFilter = (newBlock, rx, ry) -> true;
+                        shape = ShapeCircle;
                         TextureRegion texture = Vars.resources.getTexureRegion("saw_l");
-                        renderLogic = new Renderer.RenderLogic() {
+                        TextureRegion normal = Vars.resources.getTexureRegion("saw_l.normal");
+                        renderLogic = new Renderer.BlockLowerRenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
                                 tmpAffine2.set(tfm).translate(-size, -size);
@@ -106,17 +110,19 @@ public class Blocks {
 
                             @Override
                             public void renderNormal(Affine2 tfm, Batch bth) {
-
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
                             }
                         };
                     }
                 };
-                B =new Block() {
+                B = new Block() {
                     @Override
                     void config() {
-                        connectFilter=(newBlock, rx, ry)->ry>0;
-                        shape= ShapePolygon("saw_u");
+                        connectFilter = (newBlock, rx, ry) -> ry > 0;
+                        shape = ShapePolygon("saw_u");
                         TextureRegion texture = Vars.resources.getTexureRegion("saw_u");
+                        TextureRegion normal = Vars.resources.getTexureRegion("saw_u.normal");
                         renderLogic = new Renderer.RenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
@@ -126,7 +132,8 @@ public class Blocks {
 
                             @Override
                             public void renderNormal(Affine2 tfm, Batch bth) {
-
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
                             }
                         };
                     }
