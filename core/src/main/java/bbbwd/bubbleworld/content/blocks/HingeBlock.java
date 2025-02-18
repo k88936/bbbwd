@@ -13,6 +13,7 @@ public abstract class HingeBlock extends RevoluteBlock {
     public void compose(int entityA, int entityB, int baseEntity) {
         super.compose(entityA, entityB, baseEntity);
         JointCM jointCM = Vars.ecs.getMapper(JointCM.class).get(baseEntity);
+        Box2d.b2RevoluteJoint_EnableLimit(jointCM.jointId, true);
         Box2d.b2RevoluteJoint_SetLimits(jointCM.jointId, limitLower, limitUpper);
     }
 }

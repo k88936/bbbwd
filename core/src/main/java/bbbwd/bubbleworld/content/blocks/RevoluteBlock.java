@@ -17,26 +17,26 @@ public abstract class RevoluteBlock extends ComposedBlock {
     Vector2 connectionPoint = new Vector2(0, 0);
     float maxTorch = 1;
 
+    public static  final  JointDeviceUpdateSystem.PhysicsUpdateLogic defaultPhysicsUpdateLogic = new JointDeviceUpdateSystem.PhysicsUpdateLogic() {
+        @Override
+        public void update(DeviceCM deviceCM, JointCM jointCM) {
+            deviceCM.memory[0] = Box2d.b2RevoluteJoint_GetAngle(jointCM.jointId);
+            Box2d.b2RevoluteJoint_SetMotorSpeed(jointCM.jointId, (float) deviceCM.memory[1]);
+        }
+    };
     RevoluteBlock() {
         init();
     }
 
     @Override
     void init() {
-        physicsUpdateLogic = new JointDeviceUpdateSystem.PhysicsUpdateLogic() {
-            @Override
-            public void update(DeviceCM deviceCM, JointCM jointCM) {
-                deviceCM.memory[0] = Box2d.b2RevoluteJoint_GetAngle(jointCM.jointId);
-                Box2d.b2RevoluteJoint_SetMotorSpeed(jointCM.jointId, (float) deviceCM.memory[1]);
-            }
-        };
+        physicsUpdateLogic = defaultPhysicsUpdateLogic;
         super.init();
     }
 
     @Override
     public void compose(int entityA, int entityB, int baseEntity) {
         b2JointId b2JointId = Vars.ecs.getSystem(PhysicsSystem.class).connectByRevolute(entityA, entityB, connectionPoint, connectionPoint);
-
         Box2d.b2RevoluteJoint_SetMaxMotorTorque(b2JointId, maxTorch);
         JointCM jointCM = Vars.ecs.getMapper(JointCM.class).create(baseEntity);
         jointCM.jointId = b2JointId;

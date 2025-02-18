@@ -14,6 +14,7 @@ public class Blocks {
     public static Block testBlock;
     public static Block testBlock_OnlyConnectX;
     public static Block testHingeBlock;
+    public static Block saw;
 
     public static void loadBlocks() {
         // Load blocks
@@ -82,6 +83,60 @@ public class Blocks {
                                 bth.draw(textureB, 2 * size, 2 * size, tmpAffine2);
                             }
                         };
+                    }
+                };
+            }
+        };
+
+        saw = new RevoluteBlock() {
+            @Override
+            void config() {
+                A=new Block() {
+                    @Override
+                    void config() {
+                        connectFilter=(newBlock, rx, ry)->true;
+                        shape= ShapeCircle;
+                        TextureRegion texture = Vars.resources.getTexureRegion("saw_l");
+                        renderLogic = new Renderer.RenderLogic() {
+                            @Override
+                            public void render(Affine2 tfm, Batch bth) {
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
+                            }
+
+                            @Override
+                            public void renderNormal(Affine2 tfm, Batch bth) {
+
+                            }
+                        };
+                    }
+                };
+                B =new Block() {
+                    @Override
+                    void config() {
+                        connectFilter=(newBlock, rx, ry)->ry>0;
+                        shape= ShapePolygon("saw_u");
+                        TextureRegion texture = Vars.resources.getTexureRegion("saw_u");
+                        renderLogic = new Renderer.RenderLogic() {
+                            @Override
+                            public void render(Affine2 tfm, Batch bth) {
+                                tmpAffine2.set(tfm).translate(-size, -size);
+                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
+                            }
+
+                            @Override
+                            public void renderNormal(Affine2 tfm, Batch bth) {
+
+                            }
+                        };
+                    }
+                };
+
+                physicsUpdateLogic = new JointDeviceUpdateSystem.PhysicsUpdateLogic() {
+                    @Override
+                    public void update(DeviceCM deviceCM, JointCM jointCM) {
+                        deviceCM.memory[0] = Box2d.b2RevoluteJoint_GetAngle(jointCM.jointId);
+                        Box2d.b2RevoluteJoint_SetMotorSpeed(jointCM.jointId, 1);
                     }
                 };
             }
