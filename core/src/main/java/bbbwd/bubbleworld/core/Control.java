@@ -6,7 +6,9 @@ import bbbwd.bubbleworld.content.blocks.ComposedBlock;
 import bbbwd.bubbleworld.game.components.physics.JointCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
-import bbbwd.bubbleworld.game.systems.PhysicsSystem;
+import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
+import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
+import bbbwd.bubbleworld.game.systems.logic.LogicSystem;
 import bbbwd.bubbleworld.input.InputHandler;
 import bbbwd.bubbleworld.utils.Job;
 import bbbwd.bubbleworld.utils.Utils;
@@ -125,7 +127,9 @@ public class Control {
             Vector2 oldRelativeToNew = new Vector2(connection.oldBlockTfm.m02, connection.oldBlockTfm.m12);
             inv.applyTo(oldRelativeToNew);
 
-            Utils.Gridize(oldRelativeToNew, newBlock.size + connection.size);
+//            Gdx.app.log("seekPlaceForBuild", "oldRelativeToNew: " + oldRelativeToNew);
+            Utils.gridOf(oldRelativeToNew);
+//            Gdx.app.log("seekPlaceForBuild", "oldRelativeToNew gridized: " + oldRelativeToNew);
             if (newBlock instanceof ComposedBlock composedBlock) {
                 boolean a = composedBlock.A.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y);
                 boolean b = composedBlock.B.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y);
@@ -150,7 +154,9 @@ public class Control {
                 connection.anchorNewBlock.set(oldRelativeToNew.x, Math.copySign(newBlock.size, oldRelativeToNew.y));
             }
 
-            Utils.Gridize(connection.newPosRelativeToOld, newBlock.size + connection.size);
+//            Gdx.app.log("seekPlaceForBuild", "newPosRelativeToOld: " + connection.newPosRelativeToOld);
+            Utils.gridOf(connection.newPosRelativeToOld);
+//            Gdx.app.log("seekPlaceForBuild", "newPosRelativeToOld gridized: " + connection.newPosRelativeToOld);
             //scaled
             connection.newPosRelativeToOld.scl(connection.size / (connection.size + newBlock.size));
             if (Math.abs(connection.newPosRelativeToOld.x) > Math.abs(connection.newPosRelativeToOld.y)) {
@@ -183,8 +189,9 @@ public class Control {
                    .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
                     connection.anchorNewBlock, connection.anchorOldBlock,
                     connection.relativeAngle);
-//            Gdx.app.log(connection.toString());
-            break;// or many bug
+
+//            Gdx.app.log("buildAndConnect", "connected: " + connection);
+//            break;// or many bug
 
         }
     }
@@ -192,6 +199,8 @@ public class Control {
     public void startGame() {
         WorldConfiguration config = new WorldConfigurationBuilder()
             .with(new PhysicsSystem())
+            .with(new JointDeviceUpdateSystem())
+            .with(new LogicSystem())
             .build();
         Vars.ecs = new World(config);
         isGameRunning = true;
@@ -216,14 +225,14 @@ public class Control {
 
         @Override
         public String toString() {
-            return "Connection{" +
+            return "\nConnection{" +
                 "prefer=" + prefer +
                 ", newBoxEntityMapper=" + newBoxEntityMapper +
                 ", oldBoxEntity=" + oldBoxEntity +
                 ", size=" + size +
-                ", oldBlockTfm=" + oldBlockTfm +
-                ", newBlockTfm=" + newBlockTfm +
-                ", relative=" + newPosRelativeToOld +
+                ", oldBlockTfm=\n" + oldBlockTfm +
+                ", \nnewBlockTfm=\n" + newBlockTfm +
+                ", \nrelative=" + newPosRelativeToOld +
                 ", anchorNewBlock=" + anchorNewBlock +
                 ", anchorOldBlock=" + anchorOldBlock +
                 ", relativeAngle=" + relativeAngle +

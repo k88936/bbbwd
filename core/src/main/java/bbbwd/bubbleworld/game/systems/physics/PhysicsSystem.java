@@ -1,4 +1,4 @@
-package bbbwd.bubbleworld.game.systems;
+package bbbwd.bubbleworld.game.systems.physics;
 
 import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.components.TransformCM;

@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test;
 public class PhysicsTest {
     @Test
     public void TestSquareOverlap() {
-        TestUtils.init();
+        Tools.init();
         Affine2 tmp = new Affine2().translate(3.0f, 5.0f);
-        TestUtils.setBlock(tmp, Blocks.testBlock);
+        Tools.setBlock(tmp, Blocks.testBlock);
 
 
         final boolean[] ok = {false};
-        Box2dPlus.b2WorldOverlapSquare(TestUtils.worldId, 0.4f, tmp, (entity1 -> {
+        Box2dPlus.b2WorldOverlapSquare(Tools.physicsSystem.getWorldId(), 0.4f, tmp, (entity1 -> {
             ok[0] = true;
             return false;
         }));
@@ -26,7 +26,7 @@ public class PhysicsTest {
 
     @Test
     public void TestSquareOverlap2() {
-        TestUtils.init();
+        Tools.init();
 //        Affine2 tmp = new Affine2().translate(3.0f, 5.0f);
 //        TestUtils.setBlock(tmp, Blocks.testBlock);
 
@@ -48,12 +48,12 @@ public class PhysicsTest {
         def.type(b2BodyType.b2_dynamicBody);
         b2Polygon b2Polygon = Box2d.b2MakeSquare(boxSize);
         b2ShapeDef shape = Box2d.b2DefaultShapeDef();
-        b2BodyId bodyId = Box2d.b2CreateBody(TestUtils.worldId, def.asPointer());
+        b2BodyId bodyId = Box2d.b2CreateBody(Tools.physicsSystem.getWorldId(), def.asPointer());
         Box2d.b2CreatePolygonShape(bodyId, shape.asPointer(), b2Polygon.asPointer());
 
         b2Polygon test_polygon = Box2d.b2MakeSquare(testSize);
         final boolean[] ok = {false};
-        Box2d.b2World_OverlapPolygon(TestUtils.worldId, test_polygon.asPointer(), tfm, Box2d.b2DefaultQueryFilter(), ClosureObject.fromClosure((new Box2d.b2OverlapResultFcn() {
+        Box2d.b2World_OverlapPolygon(Tools.physicsSystem.getWorldId(), test_polygon.asPointer(), tfm, Box2d.b2DefaultQueryFilter(), ClosureObject.fromClosure((new Box2d.b2OverlapResultFcn() {
             @Override
             public boolean b2OverlapResultFcn_call(b2ShapeId shapeId, VoidPointer context) {
                 ok[0] = true;

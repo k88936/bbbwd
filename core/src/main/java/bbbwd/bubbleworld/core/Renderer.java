@@ -4,7 +4,7 @@ import batchs.NormalBatch;
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
-import bbbwd.bubbleworld.game.systems.PhysicsSystem;
+import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
 import box2dLight.Light;
 import box2dLight.PointLight;
 import box2dLight.RayHandler;
@@ -30,23 +30,17 @@ public class Renderer {
     BitmapFont font;
     /** our ground box **/
     RayHandler rayHandler;
-    Texture bg, bgN;
-    TextureRegion objectReg, objectRegN;
     /** our box2D world **/
     FrameBuffer normalFbo;
     ShaderProgram lightShader;
     PointLight pointLight;
-    Texture ttttt;
     float t = 0;
-    private OrthographicCamera camera;
-    private Viewport viewport;
-    private NormalBatch normalBatch;
+    private final OrthographicCamera camera;
+    private final Viewport viewport;
+    private final NormalBatch normalBatch;
     private SpriteBatch batch;
 
     public Renderer() {
-        bg = new Texture("bg-deferred.png");
-        bgN = new Texture("bg-deferred-n.png");
-        ttttt = new Texture("object-deferred-n.png");
 
         MathUtils.random.setSeed(Long.MIN_VALUE);
 
@@ -83,12 +77,10 @@ public class Renderer {
         rayHandler.setBlurNum(0);
 
         /** BOX2D LIGHT STUFF END */
-        camera.position.x = 3;
-        camera.position.y = 4;
 
-
-        pointLight = new PointLight(rayHandler, 128, Color.WHITE, 4, 4, 4);
+        pointLight = new PointLight(rayHandler, 128, Color.WHITE, 4, 2, 2);
     }
+
 
     public void render() {
 //        pointLight.setPosition(pointLight.getPosition().rotateDeg(0.5f));
@@ -164,10 +156,6 @@ public class Renderer {
 
     public void dispose() {
         rayHandler.dispose();
-
-        objectReg.getTexture().dispose();
-        objectRegN.getTexture().dispose();
-
         normalFbo.dispose();
     }
 

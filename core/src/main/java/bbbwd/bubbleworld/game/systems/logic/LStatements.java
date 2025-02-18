@@ -11,7 +11,7 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
+        public LogicSystem.LInstruction build(LAssembler builder) {
             return null;
         }
     }
@@ -21,8 +21,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.NoopI();
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.NoopI();
         }
     }
 
@@ -32,8 +32,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.ReadI(builder.var(target), builder.var(address), builder.var(output));
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.ReadI(builder.var(target), builder.var(address), builder.var(output));
         }
 
 
@@ -44,8 +44,8 @@ public class LStatements {
         public String input = "result", target = "cell1", address = "0";
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.WriteI(builder.var(target), builder.var(address), builder.var(input));
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.WriteI(builder.var(target), builder.var(address), builder.var(input));
         }
 
 
@@ -96,8 +96,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.PrintI(builder.var(value));
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.PrintI(builder.var(value));
         }
 
 
@@ -109,8 +109,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.FormatI(builder.var(value));
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.FormatI(builder.var(value));
         }
 
 
@@ -204,8 +204,8 @@ public class LStatements {
         public String from = "0";
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.SetI(builder.var(from), builder.var(to));
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.SetI(builder.var(from), builder.var(to));
         }
 
 
@@ -218,8 +218,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.OpI(op, builder.var(a), builder.var(b), builder.var(dest));
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.OpI(op, builder.var(a), builder.var(b), builder.var(dest));
         }
 
 
@@ -243,8 +243,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.StopI();
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.StopI();
         }
 
 
@@ -281,8 +281,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.EndI();
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.EndI();
         }
 
 
@@ -300,8 +300,8 @@ public class LStatements {
 
 
         @Override
-        public LExecutor.LInstruction build(LAssembler builder) {
-            return new LExecutor.JumpI(op, builder.var(value), builder.var(compare), destIndex);
+        public LogicSystem.LInstruction build(LAssembler builder) {
+            return new LogicSystem.JumpI(op, builder.var(value), builder.var(compare), destIndex);
         }
 
     }

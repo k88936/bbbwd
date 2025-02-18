@@ -1,67 +1,37 @@
 package bbbwd.bubbleworld.game.systems.logic;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntFloatMap;
-import com.badlogic.gdx.utils.IntSet;
-import com.badlogic.gdx.utils.LongArray;
+import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.game.components.logic.DeviceCM;
+import bbbwd.bubbleworld.game.components.logic.ExecutorCm;
+import com.artemis.ComponentMapper;
+import com.artemis.annotations.All;
+import com.artemis.systems.IteratingSystem;
+import com.badlogic.gdx.Gdx;
 
-import java.util.Objects;
-
-
-public class LExecutor {
+@All(ExecutorCm.class)
+public class LogicSystem extends IteratingSystem {
     public static final int maxInstructions = 1000;
-
     public static final int
             maxGraphicsBuffer = 256,
             maxDisplayBuffer = 1024,
             maxTextBuffer = 400;
-    public LInstruction[] instructions = {};
-    /** Non-constant variables used for network sync */
-    protected LVar[] vars = {};
-    protected LVar counter, ipt;
-    protected boolean yield;
-//    public LongArray graphicsBuffer = new LongArray();
-    protected StringBuilder textBuffer = new StringBuilder();
-    public boolean initialized() {
-        return instructions.length > 0;
-    }
+    public ComponentMapper<ExecutorCm> executorCMComponentMapper;
 
-    /** Runs a single instruction. */
-    public void runOnce() {
-        //reset to start
-        if (counter.numVal >= instructions.length || counter.numVal < 0) {
-            counter.numVal = 0;
+    @Override
+    protected void process(int entityId) {
+
+        ExecutorCm executorCm = executorCMComponentMapper.get(entityId);
+        for (int i = 0; i < executorCm.ipt; i++) {
+            //reset to start
+            if (executorCm.counter.getNumVal() >= executorCm.instructions.length || executorCm.counter.getNumVal() < 0) {
+                executorCm.counter.setNumVal(0);
+            }
+
+            if (executorCm.counter.getNumVal() < executorCm.instructions.length) {
+                executorCm.instructions[(int) executorCm.counter.getNumVal()].run(executorCm);
+                executorCm.counter.increment();
+            }
         }
-
-        if (counter.numVal < instructions.length) {
-            instructions[(int) (counter.numVal++)].run(this);
-        }
-    }
-
-    /** Loads with a specified assembler. Resets all variables. */
-    public void load(LAssembler builder) {
-        Array<LVar> lVars = new Array<>(true, builder.vars.size);
-        for (LVar value : builder.vars.values()) {
-            if (value.constant) continue;
-            lVars.add(value);
-        }
-        vars = lVars.toArray(LVar.class);
-        for (int i = 0; i < vars.length; i++) {
-            vars[i].id = i;
-        }
-
-        instructions = builder.instructions;
-        counter = builder.getVar("@counter");
-//        unit = builder.getVar("@unit");
-//        thisv = builder.getVar("@this");
-//        ipt = builder.putConst("@ipt", build != null ? build.ipt : 0);todo
-    }
-
-    //region utility
-
-    /** @return a Var from this processor. May be null if out of bounds. */
-    public LVar optionalVar(int index) {
-        return index < 0 || index >= vars.length ? null : vars[index];
     }
 
     //endregion
@@ -69,9 +39,8 @@ public class LExecutor {
     //region instruction types
 
     public interface LInstruction {
-        void run(LExecutor exec);
+        void run(ExecutorCm exec);
     }
-
 //    /** Binds the processor to a unit based on some filters. */
 //    public static class UnitBindI implements LInstruction{
 //        public LVar type;
@@ -492,43 +461,45 @@ public class LExecutor {
 //    }
 //
 
-    public static record ReadI(LVar target, LVar position, LVar output) implements LInstruction {
-
-        public ReadI(LVar target, LVar position, LVar output) {
-            this.target = target;
-            this.position = position;
-            this.output = output;
-        }
+    public record ReadI(LVar target, LVar position, LVar output) implements LInstruction {
 
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
+            if (target.numi() < 0 || target.numi() >= exec.devices.length ) {
+                Gdx.app.debug("logicsystem", "index out of bounds");
+                return;
+            }
             int address = position.numi();
-//            Building from = target.building();
-//
-//            if(from instanceof MemoryBuild mem && (exec.privileged || (from.team == exec.team && !mem.block.privileged))){
-//                output.setnum(address < 0 || address >= mem.memory.length ? 0 : mem.memory[address]);
-//            }
+            int device = exec.devices[target.numi()];
+            if (device < 0) {
+                Gdx.app.debug("logicsystem", "not linked device");
+                return;
+            }
+            DeviceCM deviceCM = Vars.ecs.getMapper(DeviceCM.class).get(device);
+            output.setNum(address < 0 || address >= deviceCM.memory.length ? 0 : deviceCM.memory[address]);
         }
     }
 
-    public static record WriteI(LVar target, LVar position, LVar value) implements LInstruction {
-
-        public WriteI(LVar target, LVar position, LVar value) {
-            this.target = target;
-            this.position = position;
-            this.value = value;
-        }
+    public record WriteI(LVar target, LVar position, LVar value) implements LInstruction {
 
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
+            if (target.numi() < 0 || target.numi() >= exec.devices.length ) {
+                Gdx.app.debug("logicsystem", "index out of bounds");
+                return;
+            }
             int address = position.numi();
-//            Building from = target.building();
-//
-//            if(from instanceof MemoryBuild mem && (exec.privileged || (from.team == exec.team && !mem.block.privileged)) && address >= 0 && address < mem.memory.length){
-//                mem.memory[address] = value.num();
-//            }
+            int device = exec.devices[target.numi()];
+            if (device < 0) {
+                Gdx.app.debug("logicsystem", "not linked device");
+                return;
+            }
+            DeviceCM deviceCM = Vars.ecs.getMapper(DeviceCM.class).get(target.numi());
+            if (address > 0 && address < deviceCM.memory.length)
+                deviceCM.memory[address] = value.num();
+
         }
     }
 
@@ -682,52 +653,29 @@ public class LExecutor {
 //        }
 //    }
 
-    public static record SetI(LVar from, LVar to) implements LInstruction {
-
-        public SetI(LVar from, LVar to) {
-            this.from = from;
-            this.to = to;
-        }
+    public record SetI(LVar from, LVar to) implements LInstruction {
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
             if (!to.constant) {
-                if (from.isObj) {
-                    if (to != exec.counter) {
-                        to.objVal = from.objVal;
-                        to.isObj = true;
-                    }
-                } else {
-                    to.numVal = LVar.invalid(from.numVal) ? 0 : from.numVal;
-                    to.isObj = false;
-                }
+                to.setNumVal(LVar.invalid(from.getNumVal()) ? 0 : from.getNumVal());
             }
         }
     }
 
-    public static record OpI(LogicOp op, LVar a, LVar b, LVar dest) implements LInstruction {
-
-        public OpI(LogicOp op, LVar a, LVar b, LVar dest) {
-            this.op = op;
-            this.a = a;
-            this.b = b;
-            this.dest = dest;
-        }
+    public record OpI(LogicOp op, LVar a, LVar b, LVar dest) implements LInstruction {
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
             if (op == LogicOp.strictEqual) {
-                dest.setNum(a.isObj == b.isObj && ((a.isObj && Objects.equals(a.objVal, b.objVal)) || (!a.isObj && a.numVal == b.numVal)) ? 1 : 0);
+                dest.setNum(((a.getNumVal() == b.getNumVal())) ? 1 : 0);
             } else if (op.unary) {
+                assert op.function1 != null;
                 dest.setNum(op.function1.get(a.num()));
             } else {
-                if (op.objFunction2 != null && a.isObj && b.isObj) {
-                    //use object function if both are objects
-                    dest.setNum(op.objFunction2.get(a.obj(), b.obj()));
-                } else {
-                    //otherwise use the numeric function
-                    dest.setNum(op.function2.get(a.num(), b.num()));
-                }
+                //otherwise use the numeric function
+                assert op.function2 != null;
+                dest.setNum(op.function2.get(a.num(), b.num()));
 
             }
         }
@@ -736,14 +684,14 @@ public class LExecutor {
     public record EndI() implements LInstruction {
 
         @Override
-        public void run(LExecutor exec) {
-            exec.counter.numVal = exec.instructions.length;
+        public void run(ExecutorCm exec) {
+            exec.counter.setNumVal(exec.instructions.length);
         }
     }
 
     public record NoopI() implements LInstruction {
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
         }
     }
 
@@ -905,35 +853,25 @@ public class LExecutor {
         }
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
 
             if (exec.textBuffer.length() >= maxTextBuffer) return;
 
             //this should avoid any garbage allocation
-            if (value.isObj) {
-                String strValue = toString(value.objVal);
-
-                exec.textBuffer.append(strValue);
+            //display integer version when possible
+            if (Math.abs(value.getNumVal() - Math.round(value.getNumVal())) < 0.00001) {
+                exec.textBuffer.append(Math.round(value.getNumVal()));
             } else {
-                //display integer version when possible
-                if (Math.abs(value.numVal - Math.round(value.numVal)) < 0.00001) {
-                    exec.textBuffer.append(Math.round(value.numVal));
-                } else {
-                    exec.textBuffer.append(value.numVal);
-                }
+                exec.textBuffer.append(value.getNumVal());
             }
         }
     }
 
     public record FormatI(LVar value) implements LInstruction {
 
-        public FormatI(LVar value) {
-            this.value = value;
-        }
-
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
 
             if (exec.textBuffer.length() >= maxTextBuffer) return;
 
@@ -956,23 +894,18 @@ public class LExecutor {
             if (placeholderIndex == -1) return;
 
             //this should avoid any garbage allocation
-            if (value.isObj) {
-                String strValue = PrintI.toString(value.objVal);
-
-                exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, strValue);
+            //display integer version when possible
+            if (Math.abs(value.getNumVal() - Math.round(value.getNumVal())) < 0.00001) {
+                exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, Math.round(value.getNumVal()) + "");
             } else {
-                //display integer version when possible
-                if (Math.abs(value.numVal - Math.round(value.numVal)) < 0.00001) {
-                    exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, Math.round(value.numVal) + "");
-                } else {
-                    exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, value.numVal + "");
-                }
+                exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, value.getNumVal() + "");
             }
         }
     }
+
     public record PrintFlushI(LVar target) implements LInstruction {
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
 
 //            if(target.building() instanceof MessageBuild d && (exec.privileged || (d.team == exec.team && !d.block.privileged))){
 //
@@ -984,23 +917,19 @@ public class LExecutor {
 
         }
     }
-    public record JumpI(ConditionOp op, LVar value,LVar compare,int address) implements LInstruction {
+
+    public record JumpI(ConditionOp op, LVar value, LVar compare, int address) implements LInstruction {
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
             if (address != -1) {
-                LVar va = value;
-                LVar vb = compare;
                 boolean cmp;
                 if (op == ConditionOp.strictEqual) {
-                    cmp = va.isObj == vb.isObj && ((va.isObj && va.objVal == vb.objVal) || (!va.isObj && va.numVal == vb.numVal));
-                } else if (op.objFunction != null && va.isObj && vb.isObj) {
-                    //use object function if both are objects
-                    cmp = op.objFunction.get(value.obj(), compare.obj());
+                    cmp = ((value.getNumVal() == compare.getNumVal()));
                 } else {
                     cmp = op.function.get(value.num(), compare.num());
                 }
                 if (cmp) {
-                    exec.counter.numVal = address;
+                    exec.counter.setNumVal(address);
                 }
             }
         }
@@ -1010,10 +939,9 @@ public class LExecutor {
     public record StopI() implements LInstruction {
 
         @Override
-        public void run(LExecutor exec) {
+        public void run(ExecutorCm exec) {
             //skip back to self.
-            exec.counter.numVal--;
-            exec.yield = true;
+            exec.counter.increment(-1);
         }
     }
 

@@ -2,10 +2,10 @@ package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.core.Renderer;
-import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
-import bbbwd.bubbleworld.game.systems.PhysicsSystem;
+import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
+import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
 import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.box2d.structs.b2BodyId;
 import com.badlogic.gdx.box2d.structs.b2Hull;
@@ -47,20 +47,6 @@ public abstract class Block {
             Box2dPlus.b2WorldOverlapCircle(physicsSystem.getWorldId(), block.size * tolerance, transform, callback);
         }
     };
-    public final static Shape ShapePolygon = new Shape() {
-        @Override
-        public b2BodyId buildShape(Affine2 transform, Block block) {
-            PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
-            return Box2dPlus.b2CreatePolygon(physicsSystem.getWorldId(), transform, block.hull);
-        }
-
-        @Override
-        public void overlap(Block block, float tolerance, Affine2 transform, Box2dPlus.EntityCallback callback) {
-            PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
-            Box2dPlus.b2WorldOverlapPolygon(physicsSystem.getWorldId(), block.hull, transform, callback);
-
-        }
-    };
     public static TextureRegion defaultTexture;
     public static TextureRegion defaultNormal;
     public static final Renderer.RenderLogic defaultRenderLogic = new Renderer.RenderLogic() {
@@ -89,8 +75,29 @@ public abstract class Block {
     public ConnectFilter connectFilter = defaultConnectionFilter;
     public Renderer.RenderLogic renderLogic = defaultRenderLogic;
     public b2Hull hull;
-
     Block() {
+        init();
+    }
+
+    public Shape ShapePolygon(String id) {
+        hull = Vars.resources.getHull(id);
+        return new Shape() {
+            @Override
+            public b2BodyId buildShape(Affine2 transform, Block block) {
+                PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
+                return Box2dPlus.b2CreatePolygon(physicsSystem.getWorldId(), transform, block.hull);
+            }
+
+            @Override
+            public void overlap(Block block, float tolerance, Affine2 transform, Box2dPlus.EntityCallback callback) {
+                PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
+                Box2dPlus.b2WorldOverlapPolygon(physicsSystem.getWorldId(), block.hull, transform, callback);
+
+            }
+        };
+    }
+
+    void init() {
         config();
     }
 

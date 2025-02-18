@@ -1,6 +1,9 @@
 package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.game.components.logic.DeviceCM;
+import bbbwd.bubbleworld.game.components.physics.JointCM;
+import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.MathUtils;
 
@@ -12,15 +15,27 @@ public abstract class ComposedBlock extends Block {
 
         }
     };
+    static final JointDeviceUpdateSystem.PhysicsUpdateLogic DEFAULT_PHYSICS_UPDATE_LOGIC = new JointDeviceUpdateSystem.PhysicsUpdateLogic() {
+        @Override
+        public void update(DeviceCM deviceCM, JointCM jointCM) {
+
+        }
+    };
     public Block A = defaultBlock;
     public Block B = defaultBlock;
 
+
+    public JointDeviceUpdateSystem.PhysicsUpdateLogic physicsUpdateLogic = DEFAULT_PHYSICS_UPDATE_LOGIC;
+
     ComposedBlock() {
-        config();
+        init();
+    }
+
+    @Override
+    void init() {
+        super.init();
         A.size = size;
         B.size = size;
-//        connectFilter = (newBlock, rx, ry) -> (A.connectFilter.filterOut(newBlock, rx, ry) || B.connectFilter.filterOut(newBlock, rx, ry));
-
     }
 
     @Override
@@ -29,9 +44,7 @@ public abstract class ComposedBlock extends Block {
         int A = this.A.create(transform);
         int B = this.B.create(transform);
         int entity = Vars.ecs.create();
-//        ComposedCM composedCM = Vars.ecs.getMapper(ComposedCM.class).create(entity);
-//        composedCM.childA = A;
-//        composedCM.childB = B;
+        Vars.ecs.getMapper(DeviceCM.class).create(entity).logic = physicsUpdateLogic;
         compose(A, B, entity);
         return entity;
     }

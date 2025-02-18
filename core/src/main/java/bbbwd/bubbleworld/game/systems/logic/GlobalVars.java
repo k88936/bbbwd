@@ -38,11 +38,11 @@ public class GlobalVars {
 
         putEntryOnly("sectionGeneral");
 
-        put("the end", null, false, true);
+        put("the end", 0, false, true);
         //add default constants
         putEntry("false", 0);
         putEntry("true", 1);
-        put("null", null, false, true);
+        put("null", 0, false, true);
 
         //math
         putEntry("@pi", MathUtils.PI);
@@ -63,7 +63,7 @@ public class GlobalVars {
 
         varMapW = putEntry("@mapw", 0);
         varMapH = putEntry("@maph", 0);
-        varWait = putEntry("@wait", null);
+        varWait = putEntry("@wait", 0);
 
         putEntryOnly("sectionNetwork");
 
@@ -71,9 +71,9 @@ public class GlobalVars {
         varClient = putEntry("@client", 0, true);
 
         //privileged desynced client variables
-        varClientLocale = putEntry("@clientLocale", null, true);
-        varClientUnit = putEntry("@clientUnit", null, true);
-        varClientName = putEntry("@clientName", null, true);
+        varClientLocale = putEntry("@clientLocale", 0, true);
+        varClientUnit = putEntry("@clientUnit", 0, true);
+        varClientName = putEntry("@clientName", 0, true);
         varClientTeam = putEntry("@clientTeam", 0, true);
         varClientMobile = putEntry("@clientMobile", 0, true);
 
@@ -174,12 +174,12 @@ public class GlobalVars {
     public void update() {
         //set up time; note that @time is now only updated once every invocation and directly based off of @tick.
         //having time be based off of user system time was a very bad idea.
-        varTime.numVal = state.tick / 60.0 * 1000.0;
-        varTick.numVal = state.tick;
+        varTime.setNumVal(state.tick / 60.0 * 1000.0);
+        varTick.setNumVal(state.tick);
 
         //shorthands for seconds/minutes spent in save
-        varSecond.numVal = state.tick / 60f;
-        varMinute.numVal = state.tick / 60f / 60f;
+        varSecond.setNumVal(state.tick / 60f);
+        varMinute.setNumVal(state.tick / 60f / 60f);
 
 //        //wave state
 //        varWave.numval = state.wave;
@@ -241,16 +241,16 @@ public class GlobalVars {
 
     /** Sets a global variable by name. */
     public void set(String name, double value) {
-        get(name, true).numVal = value;
+        get(name, true).setNumVal(value);
     }
 
     /** Adds a constant value by name. */
-    public LVar put(String name, Object value, boolean privileged) {
+    public LVar put(String name, double value, boolean privileged) {
         return put(name, value, privileged, true);
     }
 
     /** Adds a constant value by name. */
-    public LVar put(String name, Object value, boolean privileged, boolean hidden) {
+    public LVar put(String name, double value, boolean privileged, boolean hidden) {
         LVar existingVar = vars.get(name);
         if (existingVar != null) { //don't overwrite existing vars (see #6910)
             Logger.getGlobal().severe("Failed to add global logic variable '@', as it already exists." + name);
@@ -259,13 +259,7 @@ public class GlobalVars {
 
         LVar var = new LVar(name);
         var.constant = true;
-        if (value instanceof Number num) {
-            var.isObj = false;
-            var.numVal = num.doubleValue();
-        } else {
-            var.isObj = true;
-            var.objVal = value;
-        }
+            var.setNumVal(value);
 
         vars.put(name, var);
         if (privileged) privilegedNames.add(name);
@@ -276,15 +270,15 @@ public class GlobalVars {
         return var;
     }
 
-    public LVar put(String name, Object value) {
+    public LVar put(String name, double value) {
         return put(name, value, false);
     }
 
-    public LVar putEntry(String name, Object value) {
+    public LVar putEntry(String name, double value) {
         return put(name, value, false, false);
     }
 
-    public LVar putEntry(String name, Object value, boolean privileged) {
+    public LVar putEntry(String name, double value, boolean privileged) {
         return put(name, value, privileged, false);
     }
 

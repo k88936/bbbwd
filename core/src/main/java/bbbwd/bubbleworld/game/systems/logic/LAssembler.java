@@ -18,15 +18,15 @@ public class LAssembler{
     /** Maps names to variable. */
     public OrderedMap<String, LVar> vars = new OrderedMap<>();
     /** All instructions to be executed. */
-    public LExecutor.LInstruction[] instructions;
+    public LogicSystem.LInstruction[] instructions;
 
     public LAssembler(){
         //instruction counter
-        putVar("@counter").isObj = false;
+        putVar("@counter");
         //currently controlled unit
-        putConst("@unit", null);
+        putConst("@unit", 0);
         //reference to self
-        putConst("@this", null);
+        putConst("@this", 0);
     }
 
     public static LAssembler assemble(String data){
@@ -35,13 +35,13 @@ public class LAssembler{
         Array<LStatement> st = read(data);
 
 
-        Array<LExecutor.LInstruction> insts = new Array<>();
+        Array<LogicSystem.LInstruction> insts = new Array<>();
         for (LStatement lStatement : st) {
-            LExecutor.LInstruction build = lStatement.build(asm);
+            LogicSystem.LInstruction build = lStatement.build(asm);
             if(build==null)continue;
             insts.add(build);
         }
-        asm.instructions =insts.toArray(LExecutor.LInstruction.class);
+        asm.instructions =insts.toArray(LogicSystem.LInstruction.class);
         return asm;
     }
 
@@ -72,7 +72,8 @@ public class LAssembler{
 
         //string case
         if(!symbol.isEmpty() && symbol.charAt(0) == '\"' && symbol.charAt(symbol.length() - 1) == '\"'){
-            return putConst("___" + symbol, symbol.substring(1, symbol.length() - 1).replace("\\n", "\n"));
+            throw new RuntimeException("Strings are not supported yet.");
+//            return putConst("___" + symbol, symbol.substring(1, symbol.length() - 1).replace("\\n", "\n"));
         }
 
         //remove spaces for non-strings
@@ -108,16 +109,9 @@ public class LAssembler{
     }
 
     /** Adds a constant value by name. */
-    public LVar putConst(String name, Object value){
+    public LVar putConst(String name, double value){
         LVar var = putVar(name);
-        if(value instanceof Number number){
-            var.isObj = false;
-            var.numVal = number.doubleValue();
-            var.objVal = null;
-        }else{
-            var.isObj = true;
-            var.objVal = value;
-        }
+            var.setNumVal(value);
         var.constant = true;
         return var;
     }
@@ -129,7 +123,6 @@ public class LAssembler{
         }else{
             //variables are null objects by default
             LVar var = new LVar(name);
-            var.isObj = true;
             vars.put(name, var);
             return var;
         }

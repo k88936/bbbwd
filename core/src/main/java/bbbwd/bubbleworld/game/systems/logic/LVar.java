@@ -5,13 +5,11 @@ public class LVar {
     public final String name;
     public int id;
 
-    public boolean isObj, constant;
-
-    public Object objVal;
-    public double numVal;
+    public boolean constant;
 
     //ms timestamp for when this was last synced; used in the sync instruction
     public long syncTime;
+    private double numVal;
 
     public LVar(String name) {
         this(name, -1);
@@ -45,30 +43,23 @@ public class LVar {
 //        }
 //    }
 
-    public Object obj() {
-        return isObj ? objVal : null;
-    }
 
     public boolean bool() {
-        return isObj ? objVal != null : Math.abs(numVal) >= 0.00001;
+        return Math.abs(getNumVal()) >= 0.00001;
     }
 
     public double num() {
-        return isObj ? objVal != null ? 1 : 0 : invalid(numVal) ? 0 : numVal;
+        return invalid(getNumVal()) ? 0 : numVal;
     }
 
-    /** Get num value from variable, convert null to NaN to handle it differently in some instructions */
-    public double numOrNan() {
-        return isObj ? objVal != null ? 1 : Double.NaN : invalid(numVal) ? 0 : numVal;
-    }
 
     public float numf() {
-        return isObj ? objVal != null ? 1 : 0 : invalid(numVal) ? 0 : (float) numVal;
+        return invalid(getNumVal()) ? 0 : (float) numVal;
     }
 
     /** Get float value from variable, convert null to NaN to handle it differently in some instructions */
     public float numfOrNan() {
-        return isObj ? objVal != null ? 1 : Float.NaN : invalid(numVal) ? 0 : (float) numVal;
+        return invalid(getNumVal()) ? 0 : (float) numVal;
     }
 
     public int numi() {
@@ -76,34 +67,41 @@ public class LVar {
     }
 
     public void setBool(boolean value) {
-        setNum(value ? 1 : 0);
+        double value1 = value ? 1 : 0;
+        if (constant) return;
+        this.numVal = value1;
     }
 
     public void setNum(double value) {
         if (constant) return;
-        if (invalid(value)) {
-            objVal = null;
-            isObj = true;
-        } else {
-            numVal = value;
-            objVal = null;
-            isObj = false;
-        }
+        this.numVal = value;
     }
 
-    public void setObj(Object value) {
-        if (constant) return;
-        objVal = value;
-        isObj = true;
+
+//    public void setConst(Object value) {
+//        objVal = value;
+//        isObj = true;
+//    }
+
+
+    public void reset() {
+        setNumVal(0);
     }
 
-    public void setConst(Object value) {
-        objVal = value;
-        isObj = true;
+    public double getNumVal() {
+        return numVal;
     }
 
-    @Override
-    public String toString() {
-        return name + (isObj ? " = " + objVal : " = " + numVal);
+    public double setNumVal(double numVal) {
+        this.numVal = numVal;
+        return numVal;
+    }
+
+    public void increment() {
+        numVal++;
+    }
+
+    public void increment(double delta) {
+        numVal += delta;
     }
 }

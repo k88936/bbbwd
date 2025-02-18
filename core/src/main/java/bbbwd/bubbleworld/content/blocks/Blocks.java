@@ -17,14 +17,11 @@ public class Blocks {
         Block.defaultNormal = Vars.resources.getTexureRegion("test_block.normal");
 
 
-
-        
         testBlock = new Block() {
             @Override
             void config() {
                 connectFilter = (newBlock, rx, ry) -> false;
-                hull = Vars.resources.getHull("test_block");
-                shape = ShapePolygon;
+                shape = ShapePolygon("test_block");
             }
         };
         testBlock_OnlyConnectX = new Block() {
@@ -45,6 +42,7 @@ public class Blocks {
                     void config() {
                         connectFilter = (newBlock, rx, ry) -> ry > 0;
                         final TextureRegion textureA = Vars.resources.getTexureRegion("hinge_l");
+                        shape = ShapePolygon("hinge_l");
                         renderLogic = new Renderer.RenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {
@@ -66,6 +64,7 @@ public class Blocks {
                     void config() {
 
                         final TextureRegion textureB = Vars.resources.getTexureRegion("hinge_u");
+                        shape = ShapePolygon("hinge_u");
                         connectFilter = (newBlock, rx, ry) -> ry < 0;
                         renderLogic = new Renderer.RenderLogic() {
                             @Override

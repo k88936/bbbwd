@@ -2,6 +2,7 @@ package bbbwd.bubbleworld;
 
 import bbbwd.bubbleworld.content.blocks.Blocks;
 import bbbwd.bubbleworld.core.*;
+import bbbwd.bubbleworld.game.components.logic.DeviceCM;
 import bbbwd.bubbleworld.game.systems.logic.GlobalVars;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -50,12 +51,7 @@ public class Main extends ApplicationAdapter {
             " TotalMemory: " + runtime.totalMemory() / 1024 / 1024 + "MB" +
             " FreeMemory: " + runtime.freeMemory() / 1024 / 1024 + "MB");
 
-        float xb = 4;
-        float yb = 4;
-        Control.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb - 0.9f), Blocks.testBlock);
-        Control.buildBlock(new Affine2().rotate(0).translate(xb - 1, yb + 1), Blocks.testBlock);
-        Control.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb - 1), Blocks.testBlock);
-        Control.buildBlock(new Affine2().rotate(0).translate(xb + 1, yb + 2), Blocks.testHingeBlock);
+
 
     }
 

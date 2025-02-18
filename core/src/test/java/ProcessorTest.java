@@ -1,23 +1,34 @@
+import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.game.components.logic.DeviceCM;
+import bbbwd.bubbleworld.game.components.logic.ExecutorCm;
 import bbbwd.bubbleworld.game.systems.logic.LAssembler;
-import bbbwd.bubbleworld.game.systems.logic.LExecutor;
 import org.junit.jupiter.api.Test;
 
 public class ProcessorTest {
     @Test
     public void test() {
-        TestUtils.init();
-        LAssembler assemble = LAssembler.assemble("set x 10\n" +
-            "set y 20\n" +
-            "op add xy x y\n");
-        LExecutor executor = new LExecutor();
-        executor.load(assemble);
-        executor.runOnce();
-        executor.runOnce();
-        executor.runOnce();
-//        Logger.getGlobal().info("Result: " + Arrays.toString(executor.vars));
-        assert executor.optionalVar(0).numVal == 3;
-        assert executor.optionalVar(1).numVal == 10;
-        assert executor.optionalVar(2).numVal == 20;
-        assert executor.optionalVar(3).numVal == 30;
+        Tools.init();
+        int entity = Vars.ecs.create();
+
+        ExecutorCm logic = Vars.ecs.getMapper(ExecutorCm.class).create(entity);
+
+        logic.load(LAssembler.assemble("read x 1 2"));
+        Tools.step();
+
+        assert logic.instructions.length == 1;
+        assert logic.counter.getNumVal() == 1;
+
+
+        DeviceCM device = Vars.ecs.getMapper(DeviceCM.class).create(entity);
+        device.memory[2] = 1;
+
+        logic.devices[1] = entity;
+
+        Tools.step();
+        assert logic.vars.get(1).getNumVal() == 1;
+
     }
+
+//    @Test
+
 }

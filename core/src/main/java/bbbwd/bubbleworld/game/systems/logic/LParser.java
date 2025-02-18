@@ -164,7 +164,7 @@ public class LParser {
         jumps.clear();
         jumpLocations.clear();
 
-        while (pos < chars.length && line < LExecutor.maxInstructions) {
+        while (pos < chars.length && line < LogicSystem.maxInstructions) {
             switch (chars[pos]) {
                 case '\n', ';', ' ' -> pos++; //skip newlines and spaces
                 case '\r' -> pos += 2; //skip the newline after the \r

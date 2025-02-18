@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
 public abstract class LStatement{
 
 
-    public abstract LExecutor.LInstruction build(LAssembler builder);
+    public abstract LogicSystem.LInstruction build(LAssembler builder);
 
 
     public LStatement copy(){
