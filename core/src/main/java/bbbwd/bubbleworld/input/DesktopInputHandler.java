@@ -23,6 +23,7 @@ public class DesktopInputHandler extends InputHandler {
     Block type = Blocks.testBlock;
     Vector2 tmp = new Vector2();
     Vector2 touchInWorld = new Vector2();
+    int rot = 0;
     private Stage stage;
     private VisTable table_lu;
     private VisTable table_rd;
@@ -203,6 +204,10 @@ public class DesktopInputHandler extends InputHandler {
             case Input.Keys.E -> {
                 Vars.ecs.getSystem(PhysicsSystem.class).explode(touchInWorld, 2, 1, 1);
             }
+            case Input.Keys.R -> {
+                rot++;
+                if (rot > 3) rot = 0;
+            }
         }
         return false;
     }
@@ -230,7 +235,7 @@ public class DesktopInputHandler extends InputHandler {
 //            return false;
 //        }));
 //        Gdx.app.log("touchInorld: " + touchInWorld);
-        seekResult = Control.seekPlaceForBuild(touchInWorld, type, 0);
+        seekResult = Control.seekPlaceForBuild(touchInWorld, type, rot);
 //        Gdx.app.log("seekResult: " + seekResult);
 
 

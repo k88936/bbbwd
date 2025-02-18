@@ -34,7 +34,7 @@ public abstract class Block {
 
         }
     };
-    public static final Shape SHapeCircle = new Shape() {
+    public static final Shape ShapeCircle = new Shape() {
         @Override
         public b2BodyId buildShape(Affine2 transform, Block block) {
             PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);

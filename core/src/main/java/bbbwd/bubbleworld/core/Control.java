@@ -36,6 +36,7 @@ public class Control {
      * @param rot
      * @return null if no place to build
      */
+
     public static SeekResult seekPlaceForBuild(Vector2 position, Block newBlock, int rot) {
         b2WorldId worldId = Vars.ecs.getSystem(PhysicsSystem.class).getWorldId();
 //        Viewport viewport = Vars.renderer.viewport;
@@ -113,10 +114,10 @@ public class Control {
         //determine the best candidate and compute other connections
         nearBy.sort((o1, o2) -> Float.compare(o1.prefer, o2.prefer));
         Connection first = nearBy.getFirst();
-        Affine2 transform = new Affine2(first.newBlockTfm);
         for (int i = 0; i < rot % 4; i++) {
-            Utils.rotateHalfPi(transform);
+            Utils.rotateHalfPi(first.newBlockTfm);
         }
+        Affine2 transform = new Affine2(first.newBlockTfm);
 
         Affine2 inv = transform.inv();
         Vector2 newBlockPos = new Vector2(first.newBlockTfm.m02, first.newBlockTfm.m12);
@@ -165,8 +166,8 @@ public class Control {
                 connection.anchorOldBlock.set(connection.newPosRelativeToOld.x, Math.copySign(connection.size, connection.newPosRelativeToOld.y));
             }
 
-//            connection.relativeAngle=Utils.computeRotReference(connection.oldBlockTfm,first.newBlockTfm);
-            connection.relativeAngle = 0;
+            connection.relativeAngle=Utils.computeRotReference(connection.oldBlockTfm,first.newBlockTfm);
+//            connection.relativeAngle = 0;
 
             connections.add(connection);
         }
@@ -184,13 +185,14 @@ public class Control {
 
     public static void buildAndConnect(SeekResult seekResult) {
         int id = buildBlock(seekResult.transform(), seekResult.type());
+
         for (Connection connection : seekResult.connections()) {
             Vars.ecs.getSystem(PhysicsSystem.class)
                    .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
                     connection.anchorNewBlock, connection.anchorOldBlock,
                     connection.relativeAngle);
 
-//            Gdx.app.log("buildAndConnect", "connected: " + connection);
+            Gdx.app.log("buildAndConnect", "connected: " + connection);
 //            break;// or many bug
 
         }

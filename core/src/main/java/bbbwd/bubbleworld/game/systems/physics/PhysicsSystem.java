@@ -72,14 +72,16 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     public b2JointId connectByWeld(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
         DynamicBodyCM boxA = boxMapper.get(entityA);
         DynamicBodyCM boxB = boxMapper.get(entityB);
-        return Box2dPlus.b2ConnectBlockByWeldJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, referenceAngle);
+        b2JointId b2JointId = Box2dPlus.b2ConnectBlockByWeldJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, referenceAngle);
+//        Box2d.b2Joint_SetCollideConnected(b2JointId, false);
+        return b2JointId;
+
     }
 
-    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float limitLower, float limitUpper, float maxTorch) {
+    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB) {
         DynamicBodyCM boxA = boxMapper.get(entityA);
         DynamicBodyCM boxB = boxMapper.get(entityB);
-        //        Box2d.b2RevoluteJoint_SetMotorSpeed(id, 0.5f);
-        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB, limitLower, limitUpper, maxTorch);
+        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB);
     }
 //    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limitLower, float limitUpper,float maxTorch) {
 //        DynamicBodyCM boxA = boxMapper.get(entityA);

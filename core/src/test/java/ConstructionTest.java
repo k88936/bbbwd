@@ -1,6 +1,7 @@
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Blocks;
 import bbbwd.bubbleworld.core.Control;
+import bbbwd.bubbleworld.game.components.TransformCM;
 import com.badlogic.gdx.math.Vector2;
 import org.junit.jupiter.api.Test;
 
@@ -93,5 +94,20 @@ public class ConstructionTest {
         assert seekResult2.connections().getFirst().anchorNewBlock.epsilonEquals(-0.5f, 0.125f);
         assert seekResult2.connections().getFirst().anchorOldBlock.epsilonEquals(0.5f, -0.125f);
         Control.buildAndConnect(seekResult2);
+    }
+
+    @Test
+    public void testRot() {
+        Tools.init();
+        int x = Tools.setBlock(0, 0, 0, Blocks.testBlock);
+        Control.SeekResult seekResult = Control.seekPlaceForBuild(new Vector2(1f, 0), Blocks.testBlock, 1);
+        assert seekResult != null;
+        Logger.getGlobal().info(seekResult
+            .toString());
+        Control.buildAndConnect(seekResult);
+        Tools.step(100);
+
+        assert Vars.ecs.getMapper(TransformCM.class).get(x).transform.m00 == 1f;
+
     }
 }

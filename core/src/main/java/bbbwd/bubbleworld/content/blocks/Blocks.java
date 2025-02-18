@@ -2,6 +2,10 @@ package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.core.Renderer;
+import bbbwd.bubbleworld.game.components.logic.DeviceCM;
+import bbbwd.bubbleworld.game.components.physics.JointCM;
+import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
+import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
@@ -62,10 +66,9 @@ public class Blocks {
                 B = new Block() {
                     @Override
                     void config() {
-
                         final TextureRegion textureB = Vars.resources.getTexureRegion("hinge_u");
                         shape = ShapePolygon("hinge_u");
-                        connectFilter = (newBlock, rx, ry) -> ry < 0;
+                        connectFilter = (newBlock, rx, ry) -> ry <0;
                         renderLogic = new Renderer.RenderLogic() {
                             @Override
                             public void render(Affine2 tfm, Batch bth) {

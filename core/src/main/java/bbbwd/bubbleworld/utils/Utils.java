@@ -20,10 +20,10 @@ public class Utils {
         float m01 = affine2.m01;
         float m10 = affine2.m10;
         float m11 = affine2.m11;
-        affine2.m00 = m10;
-        affine2.m01 = -m00;
-        affine2.m10 = m11;
-        affine2.m11 = -m01;
+        affine2.m00 = m01;
+        affine2.m01 = -m11;
+        affine2.m10 = m00;
+        affine2.m11 = -m10;
         return affine2;
     }
 
