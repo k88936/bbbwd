@@ -5,7 +5,10 @@ import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
-import box2dLight.*;
+import box2dLight.Light;
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
+import box2dLight.RayHandlerOptions;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.graphics.*;
@@ -21,6 +24,8 @@ import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import shaders.LightShaderWithNormal;
+
+import java.util.logging.Logger;
 
 public class Renderer {
     private final OrthographicCamera camera;
@@ -48,8 +53,6 @@ public class Renderer {
         MathUtils.random.setSeed(Long.MIN_VALUE);
 
         camera = new OrthographicCamera();
-        camera.update();
-
         viewport = new ExtendViewport(10, 10, camera);
 
         normalBatch = new NormalBatch();
@@ -66,12 +69,22 @@ public class Renderer {
         options.setGammaCorrection(true);
         rayHandler = new RayHandler(Vars.ecs.getSystem(PhysicsSystem.class).getWorldId(), Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), options) {
             @Override
+            protected void updateLightShader() {
+                lightShader.setUniformi("u_normals", 1);
+//                lightShader.setUniformf("u_resolution", 320, 240);
+                lightShader.setUniformf("u_resolution", viewport.getScreenWidth(), viewport.getScreenHeight());
+                lightShader.setUniformf("u_world",viewport.getWorldWidth(), viewport.getWorldHeight());
+//                Gdx.app.log("LightShader", "u_resolution: " + viewport.getScreenWidth() + " " + viewport.getScreenHeight());
+//                Gdx.app.log("LightShader", "u_world: " + viewport.getWorldWidth() + " " + viewport.getWorldHeight());
+            }
+
+            @Override
             protected void updateLightShaderPerLight(Light light) {
                 // light position must be normalized
-                Vector2 project = getViewport().project(light.getPosition().cpy());
-                lightShader.setUniformf("u_lightpos", project.x / getViewport().getScreenWidth(), project.y / getViewport().getScreenHeight(), 0.05f);
-                lightShader.setUniformf("u_intensity", 4);
-                lightShader.setUniformf("u_falloff", 0, 0, 1);
+                Vector2 project = viewport.project(light.getPosition().cpy());
+                lightShader.setUniformf("u_lightpos", project.x / viewport.getScreenWidth(), project.y / viewport.getScreenHeight(), 0.5f);
+                lightShader.setUniformf("u_intensity", 10);
+                lightShader.setUniformf("u_falloff", 0, 0, 0.005f);
             }
         };
         rayHandler.setBlur(true);
@@ -80,13 +93,13 @@ public class Renderer {
         rayHandler.setLightShader(lightShader);
         rayHandler.setLightMapRendering(true);
         rayHandler.setShadows(true);
-        rayHandler.setAmbientLight(0.2f, 0.2f, 0.2f, 0.1f);
+        rayHandler.setAmbientLight(0.1f, 0.1f, 0.1f, 0.1f);
 
 
         /** BOX2D LIGHT STUFF END */
 
 
-        pointLight = new PointLight(rayHandler, 128, new Color(0.1f,0.1f,0.1f,0.1f), 8, 0, 0);
+        pointLight = new PointLight(rayHandler, 128, new Color(0.1f, 0.1f, 0.1f, 0.1f), 8, 0, 0);
 //        DirectionalLight directionalLight = new DirectionalLight(rayHandler, 128, Color.WHITE, 45);
     }
 
@@ -122,11 +135,12 @@ public class Renderer {
 
         normalBatch.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
+
         normalFbo.begin();
         Gdx.gl.glClearColor(0.5f, 0.5f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         normalBatch.begin();
-//        normalBatch.enableBlending();
+        normalBatch.enableBlending();
 
         renderNormal(backgroundEntities);
         renderNormal(blockBottomEntities);
@@ -168,7 +182,7 @@ public class Renderer {
 //            0, 0, normals.getWidth(), normals.getHeight(), // tex dimensions
 //            false, true); // flip x, y
         batch.end();
-//  lightShader.bind();
+//        lightShader.bind();
 //        lightShader.setUniformi("u_normals", 1);
 //        lightShader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         /** BOX2D LIGHT STUFF BEGIN */
@@ -208,9 +222,7 @@ public class Renderer {
         getViewport().update(width, height);
         if (normalFbo != null) normalFbo.dispose();
         normalFbo = new FrameBuffer(Pixmap.Format.RGB565, width, height, false);
-//        lightShader.bind();
-        lightShader.setUniformi("u_normals", 1);
-        lightShader.setUniformf("u_resolution", width, height);
+//        lightShader.setUniformf("u_resolution", width, height);
 //        System.out.println(width);
 //        System.out.println(height);
     }
