@@ -6,6 +6,10 @@ import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.math.MathUtils;
 
 public abstract class HingeBlock extends RevoluteBlock {
+    HingeBlock() {
+        super();
+    }
+
     float limitLower = -MathUtils.HALF_PI;
     float limitUpper = MathUtils.HALF_PI;
 

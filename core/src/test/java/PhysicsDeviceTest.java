@@ -13,6 +13,9 @@ public class PhysicsDeviceTest {
         DeviceCM deviceCM = Vars.ecs.getMapper(DeviceCM.class).get(x);
         deviceCM.memory[1] = 1;
         Tools.step(60);
-        Logger.getGlobal().info("angle: " + deviceCM.memory[0]);
+        double v = deviceCM.memory[0];
+        Logger.getGlobal().info("angle: " + v);
+        assert v!=0;
+
     }
 }

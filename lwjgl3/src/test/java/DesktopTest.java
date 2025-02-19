@@ -29,18 +29,18 @@ public class DesktopTest {
 
 //                Control.buildBlock(new Affine2().translate(0, 0).rotate(45), Blocks.testBlock);
 //
-                Control.buildBlock(new Affine2().translate(0, 0).rotate(0), Blocks.testBlock);
+              int y=  Control.buildBlock(new Affine2().translate(0, 0).rotate(0), Blocks.saw);
 //                Control.buildBlock(new Affine2().translate(- 1, - 0.9f).rotate(45), Blocks.testBlock);
 //                Control.buildBlock(new Affine2().translate(1, -1).rotate(-30), Blocks.testBlock);
-//                Control.buildBlock(new Affine2().translate(- 1, 1).rotate(10), Blocks.testBlock);
-                Control.buildBlock(new Affine2().translate(- 3, 3).rotate(0), Blocks.saw);
+                Control.buildBlock(new Affine2().translate(- 1, 1).rotate(10), Blocks.testBlock);
+//                Control.buildBlock(new Affine2().translate(- 3, 3).rotate(0), Blocks.saw);
 
-                int x = Control.buildBlock(new Affine2().translate(2, 3), Blocks.testHingeBlock);
+//                int x = Control.buildBlock(new Affine2().translate(2, 3), Blocks.testHingeBlock);
 //                JointCM jointCM = Vars.ecs.getMapper(JointCM.class).get(x);
 //                Box2d.b2Joint_SetCollideConnected(jointCM.jointId, false);
 
 
-                DeviceCM deviceCM = Vars.ecs.getMapper(bbbwd.bubbleworld.game.components.logic.DeviceCM.class).get(x);
+                DeviceCM deviceCM = Vars.ecs.getMapper(bbbwd.bubbleworld.game.components.logic.DeviceCM.class).get(y);
                 deviceCM.memory[1] = -0.2;
 
             }

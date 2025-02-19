@@ -7,8 +7,6 @@ import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
 import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.box2d.structs.b2JointId;
-import com.badlogic.gdx.box2d.structs.b2WorldId;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public abstract class RevoluteBlock extends ComposedBlock {
@@ -24,14 +22,17 @@ public abstract class RevoluteBlock extends ComposedBlock {
             Box2d.b2RevoluteJoint_SetMotorSpeed(jointCM.jointId, (float) deviceCM.memory[1]);
         }
     };
-    RevoluteBlock() {
-        init();
+
+    @Override
+    void setupDefault() {
+        super.setupDefault();
+        blockType = BlockType.motor;
+        physicsUpdateLogic = defaultPhysicsUpdateLogic;
     }
 
     @Override
-    void init() {
-        physicsUpdateLogic = defaultPhysicsUpdateLogic;
-        super.init();
+    void interOtherSetting() {
+        super.interOtherSetting();
     }
 
     @Override

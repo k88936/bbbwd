@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Affine2;
@@ -25,7 +26,8 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import shaders.LightShaderWithNormal;
 
-import java.util.logging.Logger;
+import java.util.EnumMap;
+import java.util.Map;
 
 public class Renderer {
     private final OrthographicCamera camera;
@@ -38,17 +40,15 @@ public class Renderer {
     FrameBuffer normalFbo;
     ShaderProgram lightShader;
     PointLight pointLight;
-    float t = 0;
-    IntArray backgroundEntities = new IntArray();
-    IntArray blockBottomEntities = new IntArray();
-    IntArray blockLowerEntities = new IntArray();
-    IntArray blockUpperEntities = new IntArray();
-    IntArray blockTopEntities = new IntArray();
-    IntArray effectEntities = new IntArray();
-    IntArray topEntities = new IntArray();
     private SpriteBatch batch;
 
+    Map<Layer, IntArray> drawables = new EnumMap<>(Layer.class);
+
     public Renderer() {
+
+        for (Layer value : Layer.values()) {
+            drawables.put(value, new IntArray());
+        }
 
         MathUtils.random.setSeed(Long.MIN_VALUE);
 
@@ -61,8 +61,7 @@ public class Renderer {
         font.setColor(Color.RED);
 
 
-        /** BOX2D LIGHT STUFF BEGIN */
-
+        /* BOX2D LIGHT STUFF BEGIN */
         lightShader = LightShaderWithNormal.createLightShader();
         RayHandlerOptions options = new RayHandlerOptions();
         options.setDiffuse(true);
@@ -94,9 +93,7 @@ public class Renderer {
         rayHandler.setLightMapRendering(true);
         rayHandler.setShadows(true);
         rayHandler.setAmbientLight(0.1f, 0.1f, 0.1f, 0.1f);
-
-
-        /** BOX2D LIGHT STUFF END */
+        /* BOX2D LIGHT STUFF END */
 
 
         pointLight = new PointLight(rayHandler, 128, new Color(0.1f, 0.1f, 0.1f, 0.1f), 8, 0, 0);
@@ -105,28 +102,18 @@ public class Renderer {
 
 
     public void render() {
-
         float cameraX = camera.position.x;
         float cameraY = camera.position.y;
         float halfWidth = getViewport().getWorldWidth() / 2.0f;
         float halfHeight = getViewport().getWorldHeight() / 2.0f;
-
-        backgroundEntities.clear();
-        blockBottomEntities.clear();
-        blockLowerEntities.clear();
-        blockUpperEntities.clear();
-        blockTopEntities.clear();
-        effectEntities.clear();
-        topEntities.clear();
-
-
+        drawables.values().forEach(IntArray::clear);
         PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
         Box2dPlus.b2WorldOverlapAABBbyEntity(physicsSystem.getWorldId(), cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight, new Box2dPlus.EntityCallback() {
             @Override
             public boolean b2OverlapResultFcn_call(long entity) {
                 int entityId = (int) entity;
                 DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entityId);
-                drawable.renderLogic.scheduleRender(Renderer.this, entityId);
+                drawables.get(drawable.renderLogic.layer).add(entityId);
                 return true;
             }
         });
@@ -141,13 +128,8 @@ public class Renderer {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         normalBatch.begin();
 
-        renderNormal(backgroundEntities);
-        renderNormal(blockBottomEntities);
-        renderNormal(blockLowerEntities);
-        renderNormal(blockUpperEntities);
-        renderNormal(blockTopEntities);
-        renderNormal(effectEntities);
-        renderNormal(topEntities);
+        drawables.values().forEach(this::renderNormal);
+
 
         normalBatch.end();
         normalFbo.end();
@@ -158,13 +140,7 @@ public class Renderer {
         batch.setColor(Color.WHITE);
         batch.enableBlending();
         // render all entities
-        renderEntities(backgroundEntities);
-        renderEntities(blockBottomEntities);
-        renderEntities(blockLowerEntities);
-        renderEntities(blockUpperEntities);
-        renderEntities(blockTopEntities);
-        renderEntities(effectEntities);
-        renderEntities(topEntities);
+        drawables.values().forEach(this::renderEntities);
 
         batch.end();
         /** BOX2D LIGHT STUFF BEGIN */
@@ -176,12 +152,15 @@ public class Renderer {
 
     }
 
+    private final Affine2 tmp = new Affine2();
+
     private void renderEntities(IntArray entityList) {
         for (int i = 0; i < entityList.size; i++) {
             int entity = entityList.get(i);
             TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entity);
             DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entity);
-            drawable.renderLogic.render(transformCM.transform, batch);
+            tmp.set(transformCM.transform).translate(-drawable.renderLogic.size, -drawable.renderLogic.size);
+            drawable.renderLogic.render(tmp, batch);
         }
     }
 
@@ -190,7 +169,8 @@ public class Renderer {
             int entity = entityList.get(i);
             TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entity);
             DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entity);
-            drawable.renderLogic.renderNormal(transformCM.transform, normalBatch);
+            tmp.set(transformCM.transform).translate(-drawable.renderLogic.size, -drawable.renderLogic.size);
+            drawable.renderLogic.renderNormal(tmp, normalBatch);
         }
     }
 
@@ -222,58 +202,76 @@ public class Renderer {
         this.batch = batch;
     }
 
-
-    public interface RenderLogic {
-        Affine2 tmpAffine2 = new Affine2();
-
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.blockUpperEntities.add(entity);
-        }
-
-        void render(Affine2 tfm, Batch bth);
-
-        void renderNormal(Affine2 tfm, Batch bth);
+    public enum Layer {
+        BACKGROUND,
+        BLOCK_BOTTOM,
+        BLOCK_LOWER,
+        BLOCK_UPPER,
+        BLOCK_TOP,
+        EFFECT,
+        TOP
     }
 
-    public interface BackgroundRenderLogic extends RenderLogic {
+    public abstract static class RenderLogic {
+        public final Layer layer;
+        public final float size;
+
+        RenderLogic(Layer layer, float size) {
+            this.layer = layer;
+            this.size = size;
+        }
+
+        public abstract void render(Affine2 tfm, Batch bth);
+
+        abstract void renderNormal(Affine2 tfm, Batch bth);
+
+        public static Renderer.RenderLogic of(final String name, Renderer.Layer layer, float size) {
+            final TextureRegion texture = Vars.resources.getTexureRegion(name);
+            final TextureRegion normal = Vars.resources.getTexureRegion(name + ".normal");
+            return new Renderer.RenderLogic(layer, size) {
+                @Override
+                public void render(Affine2 tfm, Batch bth) {
+                    bth.draw(texture, 2 * size, 2 * size, tfm);
+                }
+                @Override
+                public void renderNormal(Affine2 tfm, Batch bth) {
+                    bth.draw(normal, 2 * size, 2 * size, tfm);
+                }
+            };
+        }
+
+        public static Renderer.RenderLogic of(final String name, float size) {
+            return of(name, Layer.BLOCK_UPPER, size);
+        }
+
+    }
+
+    public static class SimpleRenderLogic extends RenderLogic {
+
+        final RenderLogic Lower;
+        final RenderLogic Upper;
+
+        public SimpleRenderLogic(RenderLogic a, RenderLogic b) {
+            super(null, 0);
+            if (a.layer.compareTo(b.layer) > 0) {
+                Lower = b;
+                Upper = a;
+            } else {
+                Lower = a;
+                Upper = b;
+            }
+        }
+
         @Override
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.backgroundEntities.add(entity);
+        public void render(Affine2 tfm, Batch bth) {
+            Lower.render(tfm, bth);
+            Upper.render(tfm, bth);
+        }
+
+        @Override
+        public void renderNormal(Affine2 tfm, Batch bth) {
         }
     }
 
-    public interface EffectRenderLogic extends RenderLogic {
-        @Override
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.effectEntities.add(entity);
-        }
-    }
 
-    public interface TopRenderLogic extends RenderLogic {
-        @Override
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.topEntities.add(entity);
-        }
-    }
-
-    public interface BlockTopRenderLogic extends RenderLogic {
-        @Override
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.blockTopEntities.add(entity);
-        }
-    }
-
-    public interface BlockBottomRenderLogic extends RenderLogic {
-        @Override
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.blockBottomEntities.add(entity);
-        }
-    }
-
-    public interface BlockLowerRenderLogic extends RenderLogic {
-        @Override
-        default void scheduleRender(Renderer renderer, int entity) {
-            renderer.blockLowerEntities.add(entity);
-        }
-    }
 }

@@ -1,4 +1,5 @@
 package bbbwd.bubbleworld.content.items;
 
-public class Item {
+public enum Item {
+    iron,
 }

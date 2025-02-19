@@ -5,40 +5,52 @@ import bbbwd.bubbleworld.core.Renderer;
 import bbbwd.bubbleworld.game.components.logic.DeviceCM;
 import bbbwd.bubbleworld.game.components.physics.JointCM;
 import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
 
 public class Blocks {
+
+    public static Array<Block> blocks = new Array<>();
+
+    public static ObjectMap<Block.BlockType, Array<Block>> blockTypeMap = new ObjectMap<>();
+
     public static Block testBlock;
     public static Block testBlock_OnlyConnectX;
     public static Block testHingeBlock;
     public static Block saw;
 
     public static void loadBlocks() {
-        // Load blocks
-        Block.defaultTexture = Vars.resources.getTexureRegion("test_block");
-        Block.defaultNormal = Vars.resources.getTexureRegion("test_block.normal");
+        for (Block.BlockType value : Block.BlockType.values()) {
+            blockTypeMap.put(value, new Array<>());
+        }
+        Block.defaultRenderLogic = Renderer.RenderLogic.of("test_block", Block.defaultSize);
 
 
+        Gdx.app.log("Blocks", "Loading testBlock");
         testBlock = new Block() {
             @Override
             void config() {
+                blockType = BlockType.basic;
                 connectFilter = (newBlock, rx, ry) -> false;
-                shape=ShapeBox;
-//                shape = ShapePolygon("test_block");
+                shape = ShapeBox;
             }
         };
+        Gdx.app.log("Blocks", "Loading testBlock_OnlyConnectX");
         testBlock_OnlyConnectX = new Block() {
             @Override
             void config() {
+                blockType = BlockType.basic;
                 connectFilter = (newBlock, rx, ry) -> {
                     return (ry > ((newBlock.size + size) - (Vars.GRID_SIZE))) || (ry < ((-newBlock.size - size) + (Vars.GRID_SIZE)));
                 };
             }
         };
-
+        Gdx.app.log("Blocks", "Loading testHingeBlock");
         testHingeBlock = new HingeBlock() {
             @Override
             void config() {
@@ -47,51 +59,22 @@ public class Blocks {
                     @Override
                     void config() {
                         connectFilter = (newBlock, rx, ry) -> ry > 0;
-                        final TextureRegion texture = Vars.resources.getTexureRegion("hinge_l");
-                        final TextureRegion normal = Vars.resources.getTexureRegion("hinge_l.normal");
                         shape = ShapePolygon("hinge_l");
-                        renderLogic = new Renderer.BlockLowerRenderLogic() {
-                            @Override
-                            public void render(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
-                            }
-
-                            @Override
-                            public void renderNormal(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
-                            }
-                        };
-
-
+                        renderLogic = Renderer.RenderLogic.of("hinge_l", Renderer.Layer.BLOCK_LOWER, size);
                     }
                 };
                 B = new Block() {
                     @Override
                     void config() {
-                        final TextureRegion texture = Vars.resources.getTexureRegion("hinge_u");
-                        final TextureRegion normal = Vars.resources.getTexureRegion("hinge_u.normal");
                         shape = ShapePolygon("hinge_u");
                         connectFilter = (newBlock, rx, ry) -> ry < 0;
-                        renderLogic = new Renderer.RenderLogic() {
-                            @Override
-                            public void render(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
-                            }
-
-                            @Override
-                            public void renderNormal(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
-                            }
-                        };
+                        renderLogic = Renderer.RenderLogic.of("hinge_u", Renderer.Layer.BLOCK_UPPER, size);
                     }
                 };
             }
         };
 
+        Gdx.app.log("Blocks", "Loading saw");
         saw = new RevoluteBlock() {
             @Override
             void config() {
@@ -100,21 +83,7 @@ public class Blocks {
                     void config() {
                         connectFilter = (newBlock, rx, ry) -> true;
                         shape = ShapeCircle;
-                        TextureRegion texture = Vars.resources.getTexureRegion("saw_l");
-                        TextureRegion normal = Vars.resources.getTexureRegion("saw_l.normal");
-                        renderLogic = new Renderer.BlockLowerRenderLogic() {
-                            @Override
-                            public void render(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
-                            }
-
-                            @Override
-                            public void renderNormal(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
-                            }
-                        };
+                        renderLogic = Renderer.RenderLogic.of("saw_l", Renderer.Layer.BLOCK_LOWER, size);
                     }
                 };
                 B = new Block() {
@@ -122,21 +91,7 @@ public class Blocks {
                     void config() {
                         connectFilter = (newBlock, rx, ry) -> ry > 0;
                         shape = ShapePolygon("saw_u");
-                        TextureRegion texture = Vars.resources.getTexureRegion("saw_u");
-                        TextureRegion normal = Vars.resources.getTexureRegion("saw_u.normal");
-                        renderLogic = new Renderer.RenderLogic() {
-                            @Override
-                            public void render(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(texture, 2 * size, 2 * size, tmpAffine2);
-                            }
-
-                            @Override
-                            public void renderNormal(Affine2 tfm, Batch bth) {
-                                tmpAffine2.set(tfm).translate(-size, -size);
-                                bth.draw(normal, 2 * size, 2 * size, tmpAffine2);
-                            }
-                        };
+                        renderLogic = Renderer.RenderLogic.of("saw_u", Renderer.Layer.BLOCK_UPPER, size);
                     }
                 };
 
