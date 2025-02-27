@@ -22,9 +22,9 @@ import com.kotcrab.vis.ui.widget.*;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class DesktopInputHandler extends InputHandler {
     Control.SeekResult seekResult;
-    Block type = Blocks.testBlock;
     Vector2 tmp = new Vector2();
     Vector2 touchInWorld = new Vector2();
+    BlockCollection blockCollection;
     int rot = 0;
     private Stage stage = new Stage(new ScreenViewport());
 
@@ -37,17 +37,17 @@ public class DesktopInputHandler extends InputHandler {
         VisTable root = new VisTable();
         root.setFillParent(true);
         stage.addActor(root);
-        BlockCollection blockCollection = new BlockCollection();
+        blockCollection = new BlockCollection();
         stage.addActor(blockCollection.fadeIn());
 
-           // 创建一个VisWindow窗口，并添加一些内容----------------
+        // 创建一个VisWindow窗口，并添加一些内容----------------
         VisWindow window = new VisWindow("title");
         //按钮
         VisTextButton bt = new VisTextButton("button");
         //输入框
         VisTextField tf = new VisTextField("input:");
         //滑动条
-        VisSlider sl = new VisSlider(0,100,1,false);
+        VisSlider sl = new VisSlider(0, 100, 1, false);
         //监视值的变化
         sl.addListener(new ChangeListener() {
             @Override
@@ -84,11 +84,18 @@ public class DesktopInputHandler extends InputHandler {
     @Override
     public void update() {
         stage.act();
+
+        tmp.set(Gdx.input.getX(), Gdx.input.getY());
+        Vars.renderer.getViewport().unproject(tmp);
+        touchInWorld.set(tmp);
+
+        seekResult = Control.seekPlaceForBuild(touchInWorld, getType(), rot);
+
         if (seekResult != null) {
             Batch b = Vars.renderer.getBatch();
             b.begin();
-            Affine2 translate = new Affine2(seekResult.transform()).translate(-0.5f, -0.5f);
-            Blocks.testBlock.renderLogic.render(translate, b);
+            Affine2 translate = new Affine2(seekResult.transform()).translate(-getType().size, -getType().size);
+            getType().renderLogic.render(translate, b);
             b.end();
         }
 //        Batch b = Vars.renderer.getBatch();
@@ -136,12 +143,13 @@ public class DesktopInputHandler extends InputHandler {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        tmp.set(Gdx.input.getX(), Gdx.input.getY());
-        Vars.renderer.getViewport().unproject(tmp);
-        touchInWorld.set(tmp);
-        seekResult = Control.seekPlaceForBuild(touchInWorld, type, rot);
-
-
+//        tmp.set(Gdx.input.getX(), Gdx.input.getY());
+//        Vars.renderer.getViewport().unproject(tmp);
+//        touchInWorld.set(tmp);
+//        seekResult = Control.seekPlaceForBuild(touchInWorld, getType(), rot);
+//        Gdx.app.log("touchDown", "touchInWorld: " + touchInWorld);
+//        Gdx.app.log("rot","rot:"+ rot);
+//        Gdx.app.log("seekResult", "seekResult: " + seekResult);
         return false;
     }
 
@@ -168,5 +176,9 @@ public class DesktopInputHandler extends InputHandler {
     @Override
     public boolean scrolled(float amountX, float amountY) {
         return false;
+    }
+
+    public Block getType() {
+        return blockCollection.type;
     }
 }
