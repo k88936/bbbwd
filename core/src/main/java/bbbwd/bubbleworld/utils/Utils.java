@@ -15,15 +15,17 @@ import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
 public class Utils {
-    public static Affine2 rotateHalfPi(Affine2 affine2) {
-        float m00 = affine2.m00;
-        float m01 = affine2.m01;
-        float m10 = affine2.m10;
-        float m11 = affine2.m11;
-        affine2.m00 = m01;
-        affine2.m01 = -m11;
-        affine2.m10 = m00;
-        affine2.m11 = -m10;
+    public static Affine2 rotateHalfPi(Affine2 affine2, int rot) {
+        for (int i = 0; i < rot % 4; i++) {
+            float m00 = affine2.m00;
+            float m01 = affine2.m01;
+            float m10 = affine2.m10;
+            float m11 = affine2.m11;
+            affine2.m00 = m01;
+            affine2.m01 = -m11;
+            affine2.m10 = m00;
+            affine2.m11 = -m10;
+        }
         return affine2;
     }
 
@@ -84,8 +86,8 @@ public class Utils {
         public static final Charset utf8 = Charset.forName("UTF-8");
         private static StringBuilder tmp1 = new StringBuilder(), tmp2 = new StringBuilder();
         private static Pattern
-            filenamePattern = Pattern.compile("[\0/\"<>|:*?\\\\]"),
-            reservedFilenamePattern = Pattern.compile("(CON|AUX|PRN|NUL|(COM[0-9])|(LPT[0-9]))((\\..*$)|$)", Pattern.CASE_INSENSITIVE);
+                filenamePattern = Pattern.compile("[\0/\"<>|:*?\\\\]"),
+                reservedFilenamePattern = Pattern.compile("(CON|AUX|PRN|NUL|(COM[0-9])|(LPT[0-9]))((\\..*$)|$)", Pattern.CASE_INSENSITIVE);
 
         /** @return whether the name matches the query; case-insensitive. Always returns true if query is empty. */
         public static boolean matches(String query, String name) {
@@ -348,9 +350,9 @@ public class Utils {
                         dp[i][j] = i;
                     } else {
                         dp[i][j] = Math.min(Math.min(dp[i - 1][j - 1]
-                                    + (x.charAt(i - 1) == y.charAt(j - 1) ? 0 : 1),
-                                dp[i - 1][j] + 1),
-                            dp[i][j - 1] + 1);
+                                                + (x.charAt(i - 1) == y.charAt(j - 1) ? 0 : 1),
+                                        dp[i - 1][j] + 1),
+                                dp[i][j - 1] + 1);
                     }
                 }
             }
@@ -650,7 +652,7 @@ public class Utils {
 
         public static String autoFixed(float value, int max) {
             int precision = Math.abs((int) (value + 0.0001f) - value) <= 0.0001f ? 0 :
-                Math.abs((int) (value * 10 + 0.0001f) - value * 10) <= 0.0001f ? 1 : 2;
+                    Math.abs((int) (value * 10 + 0.0001f) - value * 10) <= 0.0001f ? 1 : 2;
             return fixed(value, Math.min(precision, max));
         }
 

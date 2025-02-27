@@ -1,5 +1,6 @@
 package bbbwd.bubbleworld.input.UI;
 
+import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Block;
 import bbbwd.bubbleworld.content.blocks.Blocks;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -16,6 +17,8 @@ import com.kotcrab.vis.ui.widget.tabbedpane.TabbedPane;
 import com.kotcrab.vis.ui.widget.tabbedpane.TabbedPaneAdapter;
 
 public class BlockCollection extends VisWindow {
+
+    public Block type = Blocks.testBlock;
 
     public BlockCollection() {
         super("tabbed pane");
@@ -35,19 +38,20 @@ public class BlockCollection extends VisWindow {
         for (Block.BlockType value : Block.BlockType.values()) {
             Category category = new Category(value);
             tabbedPane.add(category);
+
         }
         tabbedPane.switchTab(0);
         setResizable(true);
         setSize(400, 380);
     }
-    private static class Category extends Tab {
+    private class Category extends Tab {
         private final String title;
         private final Table content = new VisTable();
 
-        public Category(Block.BlockType type) {
+        public Category(Block.BlockType blockType) {
             super(false, false);
-            this.title = type.name();
-            Array<Block> blocks = Blocks.blockTypeMap.get(type);
+            this.title = blockType.name();
+            Array<Block> blocks = Blocks.blockTypeMap.get(blockType);
             for (int i = 0; i < 16; i++) {
                 if (i < blocks.size) {
                     Block block = blocks.get(i);
@@ -56,7 +60,7 @@ public class BlockCollection extends VisWindow {
                     image.addListener(new ClickListener() {
                         @Override
                         public void clicked(InputEvent event, float x, float y) {
-                            System.out.println("clicked");
+                            type = block;
                         }
                     });
                 } else {

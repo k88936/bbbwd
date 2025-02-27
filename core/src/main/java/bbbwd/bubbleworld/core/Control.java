@@ -43,7 +43,7 @@ public class Control {
 
 //        Vector2 world_touch = viewport.unproject(new Vector2(position));
         ArrayList<Connection> nearBy = new ArrayList<>(10);
-        float extend = newBlock.size * 2 * 1.5f;
+        float extend = newBlock.size;
 
 
         //seek possible
@@ -66,7 +66,8 @@ public class Control {
                 float min = Float.MAX_VALUE;
                 Vector2 localGridPos = new Vector2();
 
-                float edge = dynamicBodyCM.type.size + newBlock.size;
+                Block oldBlockType = dynamicBodyCM.type;
+                float edge = oldBlockType.size + newBlock.size;
                 for (float lx = -edge; lx <= edge; lx += Vars.GRID_SIZE * 2) {
                     for (float ly = -edge; ly <= edge; ly += Vars.GRID_SIZE * 2) {
                         if (Math.abs(lx) == edge && Math.abs(ly) == edge)
@@ -74,7 +75,7 @@ public class Control {
                         if (lx > -edge && lx < edge && ly > -edge && ly < edge)
                             continue;
                         float cur = (lx - local.x) * (lx - local.x) + (ly - local.y) * (ly - local.y);
-                        if (dynamicBodyCM.type.connectFilter.filterOut(newBlock, lx, ly)) continue;
+                        if (oldBlockType.connectFilter.filterOut(oldBlockType, newBlock, lx, ly)) continue;
                         if (cur >= min) continue;
                         final boolean[] ok = {false};
                         Affine2 tmp = new Affine2(transformCM.transform).translate(lx, ly);
@@ -98,7 +99,7 @@ public class Control {
                 Connection connection = new Connection();
                 connection.prefer = min;
                 connection.oldBoxEntity = entityId;
-                connection.size = dynamicBodyCM.type.size;
+                connection.type = oldBlockType;
                 connection.oldBlockTfm = transformCM.transform;
                 connection.newPosRelativeToOld.set(localGridPos);
                 connection.newBlockTfm.set(tfm);
@@ -114,11 +115,9 @@ public class Control {
         //determine the best candidate and compute other connections
         nearBy.sort((o1, o2) -> Float.compare(o1.prefer, o2.prefer));
         Connection first = nearBy.getFirst();
-        for (int i = 0; i < rot % 4; i++) {
-            Utils.rotateHalfPi(first.newBlockTfm);
-        }
-        Affine2 transform = new Affine2(first.newBlockTfm);
+        Utils.rotateHalfPi(first.newBlockTfm, rot);
 
+        Affine2 transform = new Affine2(first.newBlockTfm);
         Affine2 inv = transform.inv();
         Vector2 newBlockPos = new Vector2(first.newBlockTfm.m02, first.newBlockTfm.m12);
         ArrayList<Connection> connections = new ArrayList<>(9);
@@ -132,8 +131,8 @@ public class Control {
             Utils.gridOf(oldRelativeToNew);
 //            Gdx.app.log("seekPlaceForBuild", "oldRelativeToNew gridized: " + oldRelativeToNew);
             if (newBlock instanceof ComposedBlock composedBlock) {
-                boolean a = composedBlock.A.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y);
-                boolean b = composedBlock.B.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y);
+                boolean a = composedBlock.A.connectFilter.filterOut(newBlock, connection.type, oldRelativeToNew.x, oldRelativeToNew.y);
+                boolean b = composedBlock.B.connectFilter.filterOut(newBlock, connection.type, oldRelativeToNew.x, oldRelativeToNew.y);
                 if (a && b) continue;
                 if (a)
                     connection.newBoxEntityMapper = ((id) -> Vars.ecs.getMapper(JointCM.class).get(id).entityB);
@@ -141,14 +140,15 @@ public class Control {
                     connection.newBoxEntityMapper = ((id) -> Vars.ecs.getMapper(JointCM.class).get(id).entityA);
 
             } else {
-                if (newBlock.connectFilter.filterOut(newBlock, oldRelativeToNew.x, oldRelativeToNew.y)) continue;
+                if (newBlock.connectFilter.filterOut(newBlock, connection.type, oldRelativeToNew.x, oldRelativeToNew.y))
+                    continue;
                 connection.newBoxEntityMapper = (id -> id);
             }
 
             //compute the anchor and angle
 
             //scaled
-            oldRelativeToNew.scl(newBlock.size / (connection.size + newBlock.size));
+            oldRelativeToNew.scl(newBlock.size / (connection.type.size + newBlock.size));
             if (Math.abs(oldRelativeToNew.x) > Math.abs(oldRelativeToNew.y)) {
                 connection.anchorNewBlock.set(Math.copySign(newBlock.size, oldRelativeToNew.x), oldRelativeToNew.y);
             } else {
@@ -159,14 +159,14 @@ public class Control {
             Utils.gridOf(connection.newPosRelativeToOld);
 //            Gdx.app.log("seekPlaceForBuild", "newPosRelativeToOld gridized: " + connection.newPosRelativeToOld);
             //scaled
-            connection.newPosRelativeToOld.scl(connection.size / (connection.size + newBlock.size));
+            connection.newPosRelativeToOld.scl(connection.type.size / (connection.type.size + newBlock.size));
             if (Math.abs(connection.newPosRelativeToOld.x) > Math.abs(connection.newPosRelativeToOld.y)) {
-                connection.anchorOldBlock.set(Math.copySign(connection.size, connection.newPosRelativeToOld.x), connection.newPosRelativeToOld.y);
+                connection.anchorOldBlock.set(Math.copySign(connection.type.size, connection.newPosRelativeToOld.x), connection.newPosRelativeToOld.y);
             } else {
-                connection.anchorOldBlock.set(connection.newPosRelativeToOld.x, Math.copySign(connection.size, connection.newPosRelativeToOld.y));
+                connection.anchorOldBlock.set(connection.newPosRelativeToOld.x, Math.copySign(connection.type.size, connection.newPosRelativeToOld.y));
             }
 
-            connection.relativeAngle=Utils.computeRotReference(connection.oldBlockTfm,first.newBlockTfm);
+            connection.relativeAngle = Utils.computeRotReference(connection.oldBlockTfm, first.newBlockTfm);
 //            connection.relativeAngle = 0;
 
             connections.add(connection);
@@ -188,9 +188,9 @@ public class Control {
 
         for (Connection connection : seekResult.connections()) {
             Vars.ecs.getSystem(PhysicsSystem.class)
-                   .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
-                    connection.anchorNewBlock, connection.anchorOldBlock,
-                    connection.relativeAngle);
+                    .connectByWeld(connection.newBoxEntityMapper.apply(id), connection.oldBoxEntity,
+                            connection.anchorNewBlock, connection.anchorOldBlock,
+                            connection.relativeAngle);
 
             Gdx.app.log("buildAndConnect", "connected: " + connection);
 //            break;// or many bug
@@ -200,10 +200,10 @@ public class Control {
 
     public void startGame() {
         WorldConfiguration config = new WorldConfigurationBuilder()
-            .with(new PhysicsSystem())
-            .with(new JointDeviceUpdateSystem())
-            .with(new LogicSystem())
-            .build();
+                .with(new PhysicsSystem())
+                .with(new JointDeviceUpdateSystem())
+                .with(new LogicSystem())
+                .build();
         Vars.ecs = new World(config);
         isGameRunning = true;
     }
@@ -220,7 +220,7 @@ public class Control {
         //to solve composed block connection
         Function<Integer, Integer> newBoxEntityMapper;
         int oldBoxEntity;
-        float size;
+        Block type;
         Affine2 oldBlockTfm = new Affine2();
         Affine2 newBlockTfm = new Affine2();
         Vector2 newPosRelativeToOld = new Vector2();
@@ -228,17 +228,17 @@ public class Control {
         @Override
         public String toString() {
             return "\nConnection{" +
-                "prefer=" + prefer +
-                ", newBoxEntityMapper=" + newBoxEntityMapper +
-                ", oldBoxEntity=" + oldBoxEntity +
-                ", size=" + size +
-                ", oldBlockTfm=\n" + oldBlockTfm +
-                ", \nnewBlockTfm=\n" + newBlockTfm +
-                ", \nrelative=" + newPosRelativeToOld +
-                ", anchorNewBlock=" + anchorNewBlock +
-                ", anchorOldBlock=" + anchorOldBlock +
-                ", relativeAngle=" + relativeAngle +
-                '}';
+                    "prefer=" + prefer +
+                    ", newBoxEntityMapper=" + newBoxEntityMapper +
+                    ", oldBoxEntity=" + oldBoxEntity +
+                    ", type=" + type +
+                    ", oldBlockTfm=\n" + oldBlockTfm +
+                    ", \nnewBlockTfm=\n" + newBlockTfm +
+                    ", \nrelative=" + newPosRelativeToOld +
+                    ", anchorNewBlock=" + anchorNewBlock +
+                    ", anchorOldBlock=" + anchorOldBlock +
+                    ", relativeAngle=" + relativeAngle +
+                    '}';
         }
     }
 }

@@ -7,9 +7,6 @@ import bbbwd.bubbleworld.game.components.physics.JointCM;
 import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -36,7 +33,7 @@ public class Blocks {
             @Override
             void config() {
                 blockType = BlockType.basic;
-                connectFilter = (newBlock, rx, ry) -> false;
+                connectFilter = ConnectFilter.always;
                 shape = ShapeBox;
             }
         };
@@ -45,9 +42,8 @@ public class Blocks {
             @Override
             void config() {
                 blockType = BlockType.basic;
-                connectFilter = (newBlock, rx, ry) -> {
-                    return (ry > ((newBlock.size + size) - (Vars.GRID_SIZE))) || (ry < ((-newBlock.size - size) + (Vars.GRID_SIZE)));
-                };
+                connectFilter = ConnectFilter.allow(true, true, false, false);
+                shape = ShapeBox;
             }
         };
         Gdx.app.log("Blocks", "Loading testHingeBlock");
@@ -58,7 +54,7 @@ public class Blocks {
                 A = new Block() {
                     @Override
                     void config() {
-                        connectFilter = (newBlock, rx, ry) -> ry > 0;
+                        connectFilter = ConnectFilter.allow(false, false, false, true);
                         shape = ShapePolygon("hinge_l");
                         renderLogic = Renderer.RenderLogic.of("hinge_l", Renderer.Layer.BLOCK_LOWER, size);
                     }
@@ -67,7 +63,7 @@ public class Blocks {
                     @Override
                     void config() {
                         shape = ShapePolygon("hinge_u");
-                        connectFilter = (newBlock, rx, ry) -> ry < 0;
+                        connectFilter = ConnectFilter.allow(false, false, true, false);
                         renderLogic = Renderer.RenderLogic.of("hinge_u", Renderer.Layer.BLOCK_UPPER, size);
                     }
                 };
@@ -81,7 +77,7 @@ public class Blocks {
                 A = new Block() {
                     @Override
                     void config() {
-                        connectFilter = (newBlock, rx, ry) -> true;
+                        connectFilter = ConnectFilter.never;
                         shape = ShapeCircle;
                         renderLogic = Renderer.RenderLogic.of("saw_l", Renderer.Layer.BLOCK_LOWER, size);
                     }
@@ -89,7 +85,7 @@ public class Blocks {
                 B = new Block() {
                     @Override
                     void config() {
-                        connectFilter = (newBlock, rx, ry) -> ry > 0;
+                        connectFilter = ConnectFilter.allow(false, false, false, true);
                         shape = ShapePolygon("saw_u");
                         renderLogic = Renderer.RenderLogic.of("saw_u", Renderer.Layer.BLOCK_UPPER, size);
                     }

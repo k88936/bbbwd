@@ -20,7 +20,7 @@ public abstract class Block {
 
     //region default values
     public static final float defaultSize = 0.5f;
-    public static final ConnectFilter defaultConnectionFilter = (newBlock, rx, ry) -> true;
+    public static final ConnectFilter defaultConnectionFilter = (newBlock, ry, oldBlock, rx) -> true;
     public static final Shape ShapeBox = new Shape() {
         @Override
         public b2BodyId buildShape(Affine2 transform, Block block) {
@@ -50,6 +50,7 @@ public abstract class Block {
         }
     };
     public static Renderer.RenderLogic defaultRenderLogic;
+
     public Shape ShapePolygon(String id) {
         hull = Vars.resources.getHull(id);
         return new Shape() {
@@ -74,21 +75,22 @@ public abstract class Block {
     public ConnectFilter connectFilter;
     public Renderer.RenderLogic renderLogic;
     public b2Hull hull;
+
     Block() {
         setupDefault();
         interOtherSetting();
     }
 
 
-
-    void setupDefault(){
+    void setupDefault() {
         connectFilter = defaultConnectionFilter;
         renderLogic = defaultRenderLogic;
-        size =defaultSize;
+        size = defaultSize;
     }
+
     void interOtherSetting() {
         config();
-        if(blockType!=null)Blocks.blockTypeMap.get(blockType).add(this);
+        if (blockType != null) Blocks.blockTypeMap.get(blockType).add(this);
     }
 
     abstract void config();
@@ -108,12 +110,26 @@ public abstract class Block {
     }
 
     public interface ConnectFilter {
+        ConnectFilter always = (thisBlock, newBlock, rx, ry) -> false;
+        ConnectFilter never = (thisBlock, newBlock, rx, ry) -> true;
+
         /**
-         * @param rx newBlock relative to oldBlock
-         * @param ry newBlock relative to oldBlock
+         * @param newBlock
+         * @param rx       newBlock relative to thisBlock
+         * @param ry       newBlock relative to thisBlock
          * @return ture to pass(CANNOT connect)
          */
-        boolean filterOut(Block newBlock, float rx, float ry);
+        boolean filterOut(Block thisBlock, Block newBlock, float rx, float ry);
+
+        static ConnectFilter allow(boolean left, boolean right, boolean top, boolean bottom) {
+            return (thisBlock, newBlock, rx, ry) -> {
+                if (left && rx < -newBlock.size - thisBlock.size + Vars.GRID_SIZE) return false;
+                if (right && rx > newBlock.size + thisBlock.size - Vars.GRID_SIZE) return false;
+                if (top && ry > newBlock.size + thisBlock.size - Vars.GRID_SIZE) return false;
+                if (bottom && ry < -newBlock.size - thisBlock.size + Vars.GRID_SIZE) return false;
+                return true;
+            };
+        }
     }
 
     public interface Shape {
