@@ -1,15 +1,9 @@
 package bbbwd.bubbleworld;
 
 import bbbwd.bubbleworld.core.*;
+import bbbwd.bubbleworld.core.render.Renderer;
 import bbbwd.bubbleworld.game.systems.logic.GlobalVars;
 import com.artemis.World;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.util.logging.*;
 
 public class Vars {
     public static final float GRID_SIZE = 0.125f;

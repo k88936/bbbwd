@@ -1,16 +1,14 @@
 package bbbwd.bubbleworld.input.UI;
 
 import bbbwd.bubbleworld.content.blocks.Block;
-import bbbwd.bubbleworld.content.blocks.Blocks;
-import bbbwd.bubbleworld.core.Renderer;
+import bbbwd.bubbleworld.core.render.RenderLogic;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 public class BlockIcon extends BaseDrawable {
 
-    final Renderer.RenderLogic renderLogic;
+    final RenderLogic renderLogic;
     final Affine2 transform;
     final float scale;
 

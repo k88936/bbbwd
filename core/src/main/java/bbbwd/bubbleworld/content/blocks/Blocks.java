@@ -1,11 +1,10 @@
 package bbbwd.bubbleworld.content.blocks;
 
-import bbbwd.bubbleworld.Vars;
-import bbbwd.bubbleworld.core.Renderer;
+import bbbwd.bubbleworld.core.render.RenderLogic;
+import bbbwd.bubbleworld.core.render.Renderer;
 import bbbwd.bubbleworld.game.components.logic.DeviceCM;
 import bbbwd.bubbleworld.game.components.physics.JointCM;
 import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -16,19 +15,16 @@ public class Blocks {
 
     public static ObjectMap<Block.BlockType, Array<Block>> blockTypeMap = new ObjectMap<>();
 
-    public static Block testBlock;
-    public static Block testBlock_OnlyConnectX;
-    public static Block testHingeBlock;
-    public static Block saw;
+    public static Block testBlock, testBlock_OnlyConnectX, testHingeBlock, saw;
 
-    public static void loadBlocks() {
+    public static void load() {
         for (Block.BlockType value : Block.BlockType.values()) {
             blockTypeMap.put(value, new Array<>());
         }
-        Block.defaultRenderLogic = Renderer.RenderLogic.of("test_block", Block.defaultSize);
+        Block.defaultRenderLogic = RenderLogic.of("test_block", Block.defaultSize);
 
 
-        Gdx.app.log("Blocks", "Loading testBlock");
+//        Gdx.app.log("Blocks", "Loading testBlock");
         testBlock = new Block() {
             @Override
             void config() {
@@ -37,7 +33,7 @@ public class Blocks {
                 shape = ShapeBox;
             }
         };
-        Gdx.app.log("Blocks", "Loading testBlock_OnlyConnectX");
+//        Gdx.app.log("Blocks", "Loading testBlock_OnlyConnectX");
         testBlock_OnlyConnectX = new Block() {
             @Override
             void config() {
@@ -46,7 +42,7 @@ public class Blocks {
                 shape = ShapeBox;
             }
         };
-        Gdx.app.log("Blocks", "Loading testHingeBlock");
+//        Gdx.app.log("Blocks", "Loading testHingeBlock");
         testHingeBlock = new HingeBlock() {
             @Override
             void config() {
@@ -56,7 +52,7 @@ public class Blocks {
                     void config() {
                         connectFilter = ConnectFilter.allow(false, false, false, true);
                         shape = ShapePolygon("hinge_l");
-                        renderLogic = Renderer.RenderLogic.of("hinge_l", Renderer.Layer.BLOCK_LOWER, size);
+                        renderLogic = RenderLogic.of("hinge_l", Renderer.Layer.BLOCK_LOWER, size);
                     }
                 };
                 B = new Block() {
@@ -64,13 +60,13 @@ public class Blocks {
                     void config() {
                         shape = ShapePolygon("hinge_u");
                         connectFilter = ConnectFilter.allow(false, false, true, false);
-                        renderLogic = Renderer.RenderLogic.of("hinge_u", Renderer.Layer.BLOCK_UPPER, size);
+                        renderLogic = RenderLogic.of("hinge_u", Renderer.Layer.BLOCK_UPPER, size);
                     }
                 };
             }
         };
 
-        Gdx.app.log("Blocks", "Loading saw");
+//        Gdx.app.log("Blocks", "Loading saw");
         saw = new RevoluteBlock() {
             @Override
             void config() {
@@ -79,7 +75,7 @@ public class Blocks {
                     void config() {
                         connectFilter = ConnectFilter.never;
                         shape = ShapeCircle;
-                        renderLogic = Renderer.RenderLogic.of("saw_l", Renderer.Layer.BLOCK_LOWER, size);
+                        renderLogic = RenderLogic.of("saw_l", Renderer.Layer.BLOCK_LOWER, size);
                     }
                 };
                 B = new Block() {
@@ -87,7 +83,7 @@ public class Blocks {
                     void config() {
                         connectFilter = ConnectFilter.allow(false, false, false, true);
                         shape = ShapePolygon("saw_u");
-                        renderLogic = Renderer.RenderLogic.of("saw_u", Renderer.Layer.BLOCK_UPPER, size);
+                        renderLogic = RenderLogic.of("saw_u", Renderer.Layer.BLOCK_UPPER, size);
                     }
                 };
 

@@ -1,4 +1,4 @@
-package bbbwd.bubbleworld.core;
+package bbbwd.bubbleworld.core.render;
 
 import batchs.NormalBatch;
 import bbbwd.bubbleworld.Vars;
@@ -14,8 +14,7 @@ import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.CpuSpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Affine2;
@@ -38,11 +37,20 @@ public class Renderer {
     RayHandler rayHandler;
     /** our box2D world **/
     FrameBuffer normalFbo;
+    FrameBuffer liquidFbo;
+    FrameBuffer liquidProcessedFbo;
+    FrameBuffer liquidNormalFbo;
     ShaderProgram lightShader;
+    ShaderProgram liquidShader;
     PointLight pointLight;
-    private SpriteBatch batch;
+    private final Batch batch;
+    private final ScreenDrawer screenDrawer;
 
     Map<Layer, IntArray> drawables = new EnumMap<>(Layer.class);
+
+    Texture drop = new Texture(Gdx.files.internal("adjusted_drop.png"));
+    private ShaderProgram liquidNormalShader;
+    private ShaderProgram liquidSpriteShader;
 
     public Renderer() {
 
@@ -56,13 +64,17 @@ public class Renderer {
         viewport = new ExtendViewport(10, 10, camera);
 
         normalBatch = new NormalBatch();
-        setBatch(new SpriteBatch());
+        batch = new CpuSpriteBatch();
+        screenDrawer = new ScreenDrawer();
         font = new BitmapFont();
         font.setColor(Color.RED);
 
 
         /* BOX2D LIGHT STUFF BEGIN */
         lightShader = LightShaderWithNormal.createLightShader();
+        liquidShader = LiquidShader.createLiquidShader();
+        liquidNormalShader = LiquidNormalShader.createLiquidNormalShader();
+        liquidSpriteShader = LiquidSpriteShader.createLiquidSpriteShader();
         RayHandlerOptions options = new RayHandlerOptions();
         options.setDiffuse(true);
         options.setGammaCorrection(true);
@@ -120,28 +132,107 @@ public class Renderer {
         getViewport().apply();
 
 //        if(true) return;
-        normalBatch.setProjectionMatrix(camera.combined);
+
+
         batch.setProjectionMatrix(camera.combined);
+        batch.setShader(null);
+        liquidFbo.begin();
+        Gdx.gl20.glClearColor(0, 0, 0, 0);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+        batch.enableBlending();
+        batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE);
+
+
+        batch.setColor(Color.ORANGE);
+        renderSprite(drawables.get(Layer.LIQUID));
+
+        batch.end();
+        liquidFbo.end();
+        Texture liquid = liquidFbo.getColorBufferTexture();
+//
+
+        liquidShader.bind();
+        liquidShader.setUniformf("u_resolution",viewport.getScreenWidth(), viewport.getScreenHeight());
+        int kernel_size = 9;
+        float[] kernel = createGaussianKernel(kernel_size, 8);
+        liquidShader.setUniformi("u_range", kernel_size);
+        liquidShader.setUniform1fv("u_kernel", kernel, 0, kernel.length);
+
+        screenDrawer.setShader(liquidShader);
+        screenDrawer.disableBlending();
+        liquidProcessedFbo.begin();
+        Gdx.gl20.glClearColor(0, 0, 0, 0);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        screenDrawer.begin();
+        screenDrawer.drawScreen(liquid);
+        screenDrawer.end();
+        liquidProcessedFbo.end();
+
+        Texture liquidProcessedTexture = liquidProcessedFbo.getColorBufferTexture();
+
+
 
         normalFbo.begin();
         Gdx.gl.glClearColor(0.5f, 0.5f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        normalBatch.setProjectionMatrix(camera.combined);
         normalBatch.begin();
+        renderNormal(drawables.get(Layer.BACKGROUND));
+        renderNormal(drawables.get(Layer.BLOCK_BOTTOM));
+        renderNormal(drawables.get(Layer.BLOCK_LOWER));
+        renderNormal(drawables.get(Layer.BLOCK_UPPER));
+        normalBatch.end();
+//
+        liquidNormalShader.bind();
+        liquidNormalShader.setUniformf("u_resolution", viewport.getScreenWidth(), viewport.getScreenHeight());
+        liquidNormalShader.setUniformf("u_world", viewport.getWorldWidth(), viewport.getWorldHeight());
+        screenDrawer.enableBlending();
+        screenDrawer.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        screenDrawer.setShader(liquidNormalShader);
+//        liquidBatch.setShader(null);
+        screenDrawer.begin();
+        screenDrawer.drawScreen(liquidProcessedTexture);
+        screenDrawer.end();
 
-        drawables.values().forEach(this::renderNormal);
-
-
+        normalBatch.begin();
+        renderNormal(drawables.get(Layer.BLOCK_TOP));
+        renderNormal(drawables.get(Layer.EFFECT));
+        renderNormal(drawables.get(Layer.TOP));
         normalBatch.end();
         normalFbo.end();
 
-        Texture normals = normalFbo.getColorBufferTexture();
-        batch.begin();
-        batch.setShader(null);
-        batch.setColor(Color.WHITE);
-        batch.enableBlending();
-        // render all entities
-        drawables.values().forEach(this::renderEntities);
 
+
+
+//        if(true) return;
+
+        Texture normals = normalFbo.getColorBufferTexture();
+
+
+        batch.setProjectionMatrix(camera.combined);
+        batch.setShader(null);
+        batch.enableBlending();
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        batch.setColor(Color.WHITE);
+        batch.begin();
+        renderSprite(drawables.get(Layer.BACKGROUND));
+        renderSprite(drawables.get(Layer.BLOCK_BOTTOM));
+        renderSprite(drawables.get(Layer.BLOCK_LOWER));
+        renderSprite(drawables.get(Layer.BLOCK_UPPER));
+        batch.end();
+
+        screenDrawer.enableBlending();
+        screenDrawer.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        screenDrawer.setShader(liquidSpriteShader);
+        screenDrawer.begin();
+        screenDrawer.drawScreen(liquidProcessedTexture);
+        screenDrawer.end();
+
+        batch.begin();
+        renderSprite(drawables.get(Layer.BLOCK_TOP));
+        renderSprite(drawables.get(Layer.EFFECT));
+        renderSprite(drawables.get(Layer.TOP));
         batch.end();
         /** BOX2D LIGHT STUFF BEGIN */
         rayHandler.setCombinedMatrix(camera);
@@ -154,7 +245,30 @@ public class Renderer {
 
     private final Affine2 tmp = new Affine2();
 
-    private void renderEntities(IntArray entityList) {
+    public static float[] createGaussianKernel(int radius, float sigma) {
+        int size = 2 * radius + 1;
+        float[] kernel = new float[size * size];
+        float sum = 0;
+        int index = 0;
+
+        for (int y = -radius; y <= radius; y++) {
+            for (int x = -radius; x <= radius; x++) {
+                float value = (float) (Math.exp(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * Math.PI * sigma * sigma));
+                kernel[index] = value;
+                sum += value;
+                index++;
+            }
+        }
+
+        // 归一化核
+        for (int i = 0; i < kernel.length; i++) {
+            kernel[i] /= sum;
+        }
+
+        return kernel;
+    }
+
+    private void renderSprite(IntArray entityList) {
         for (int i = 0; i < entityList.size; i++) {
             int entity = entityList.get(i);
             TransformCM transformCM = Vars.ecs.getMapper(TransformCM.class).get(entity);
@@ -177,6 +291,12 @@ public class Renderer {
     public void dispose() {
         rayHandler.dispose();
         normalFbo.dispose();
+        liquidFbo.dispose();
+        batch.dispose();
+        normalBatch.dispose();
+        screenDrawer.dispose();
+        font.dispose();
+
     }
 
 
@@ -184,7 +304,13 @@ public class Renderer {
         if (width * height == 0) return;
         getViewport().update(width, height);
         if (normalFbo != null) normalFbo.dispose();
-        normalFbo = new FrameBuffer(Pixmap.Format.RGB565, width, height, false);
+        if (liquidFbo != null) liquidFbo.dispose();
+        if (liquidNormalFbo != null) liquidNormalFbo.dispose();
+        if (liquidProcessedFbo != null) liquidProcessedFbo.dispose();
+        normalFbo = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
+        liquidFbo = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
+        liquidProcessedFbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        liquidNormalFbo = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
 //        lightShader.setUniformf("u_resolution", width, height);
 //        System.out.println(width);
 //        System.out.println(height);
@@ -194,83 +320,18 @@ public class Renderer {
         return viewport;
     }
 
-    public SpriteBatch getBatch() {
+    public Batch getBatch() {
         return batch;
-    }
-
-    public void setBatch(SpriteBatch batch) {
-        this.batch = batch;
     }
 
     public enum Layer {
         BACKGROUND,
         BLOCK_BOTTOM,
         BLOCK_LOWER,
-        BLOCK_UPPER,
+        BLOCK_UPPER, LIQUID,
         BLOCK_TOP,
         EFFECT,
         TOP
-    }
-
-    public abstract static class RenderLogic {
-        public final Layer layer;
-        public final float size;
-
-        RenderLogic(Layer layer, float size) {
-            this.layer = layer;
-            this.size = size;
-        }
-
-        public abstract void render(Affine2 tfm, Batch bth);
-
-        abstract void renderNormal(Affine2 tfm, Batch bth);
-
-        public static Renderer.RenderLogic of(final String name, Renderer.Layer layer, float size) {
-            final TextureRegion texture = Vars.resources.getTexureRegion(name);
-            final TextureRegion normal = Vars.resources.getTexureRegion(name + ".normal");
-            return new Renderer.RenderLogic(layer, size) {
-                @Override
-                public void render(Affine2 tfm, Batch bth) {
-                    bth.draw(texture, 2 * size, 2 * size, tfm);
-                }
-                @Override
-                public void renderNormal(Affine2 tfm, Batch bth) {
-                    bth.draw(normal, 2 * size, 2 * size, tfm);
-                }
-            };
-        }
-
-        public static Renderer.RenderLogic of(final String name, float size) {
-            return of(name, Layer.BLOCK_UPPER, size);
-        }
-
-    }
-
-    public static class SimpleRenderLogic extends RenderLogic {
-
-        final RenderLogic Lower;
-        final RenderLogic Upper;
-
-        public SimpleRenderLogic(RenderLogic a, RenderLogic b) {
-            super(null, 0);
-            if (a.layer.compareTo(b.layer) > 0) {
-                Lower = b;
-                Upper = a;
-            } else {
-                Lower = a;
-                Upper = b;
-            }
-        }
-
-        @Override
-        public void render(Affine2 tfm, Batch bth) {
-            Lower.render(tfm, bth);
-            Upper.render(tfm, bth);
-        }
-
-        @Override
-        public void renderNormal(Affine2 tfm, Batch bth) {
-        }
     }
 
 

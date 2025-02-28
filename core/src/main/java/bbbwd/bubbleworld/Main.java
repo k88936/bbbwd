@@ -1,13 +1,11 @@
 package bbbwd.bubbleworld;
 
-import bbbwd.bubbleworld.content.blocks.Blocks;
 import bbbwd.bubbleworld.core.*;
-import bbbwd.bubbleworld.game.components.logic.DeviceCM;
+import bbbwd.bubbleworld.core.render.Renderer;
 import bbbwd.bubbleworld.game.systems.logic.GlobalVars;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
-import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.kotcrab.vis.ui.VisUI;
 

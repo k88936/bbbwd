@@ -3,10 +3,7 @@ package bbbwd.bubbleworld.input;
 import bbbwd.bubbleworld.input.UI.BlockCollection;
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.blocks.Block;
-import bbbwd.bubbleworld.content.blocks.Blocks;
-import bbbwd.bubbleworld.core.Control;
 import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
-import bbbwd.bubbleworld.utils.Utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
@@ -22,7 +19,7 @@ import com.kotcrab.vis.ui.widget.*;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class DesktopInputHandler extends InputHandler {
-    Control.SeekResult seekResult;
+    SeekResult seekResult;
     Vector2 tmp = new Vector2();
     Vector2 touchInWorld = new Vector2();
     BlockCollection blockCollection;
@@ -64,7 +61,6 @@ public class DesktopInputHandler extends InputHandler {
         window.add(sl);
         // 填充窗口内容并居中显示
         window.pack();
-        window.centerWindow();
         // 将窗口添加到舞台，并设置淡入效果
         stage.addActor(window.fadeIn());
     }
@@ -90,7 +86,7 @@ public class DesktopInputHandler extends InputHandler {
         Vars.renderer.getViewport().unproject(tmp);
         touchInWorld.set(tmp);
 
-        seekResult = Control.seekPlaceForBuild(touchInWorld, getType(), rot);
+        seekResult = seekPlaceForBuild(touchInWorld, getType(), rot);
 
         if (seekResult != null) {
             Batch b = Vars.renderer.getBatch();
@@ -118,7 +114,7 @@ public class DesktopInputHandler extends InputHandler {
         switch (keycode) {
             case Input.Keys.SPACE -> {
                 if (seekResult == null) return false;
-                Control.buildAndConnect(seekResult);
+                buildAndConnect(seekResult);
                 seekResult = null;
             }
             case Input.Keys.E -> {

@@ -2,9 +2,10 @@ package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.content.items.Item;
-import bbbwd.bubbleworld.core.Renderer;
+import bbbwd.bubbleworld.core.render.RenderLogic;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
+import bbbwd.bubbleworld.game.components.TypeCM;
 import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
 import bbbwd.bubbleworld.utils.Pair;
@@ -49,7 +50,7 @@ public abstract class Block {
             Box2dPlus.b2WorldOverlapCircle(physicsSystem.getWorldId(), block.size * tolerance, transform, callback);
         }
     };
-    public static Renderer.RenderLogic defaultRenderLogic;
+    public static RenderLogic defaultRenderLogic;
 
     public Shape ShapePolygon(String id) {
         hull = Vars.resources.getHull(id);
@@ -73,12 +74,12 @@ public abstract class Block {
     public float size;
     public Shape shape = ShapeBox;
     public ConnectFilter connectFilter;
-    public Renderer.RenderLogic renderLogic;
+    public RenderLogic renderLogic;
     public b2Hull hull;
 
     Block() {
         setupDefault();
-        interOtherSetting();
+        otherSetting();
     }
 
 
@@ -88,7 +89,7 @@ public abstract class Block {
         size = defaultSize;
     }
 
-    void interOtherSetting() {
+    void otherSetting() {
         config();
         if (blockType != null) Blocks.blockTypeMap.get(blockType).add(this);
     }
@@ -101,7 +102,8 @@ public abstract class Block {
         DrawableCM drawableCM = Vars.ecs.getMapper(DrawableCM.class).create(entity);
         drawableCM.renderLogic = renderLogic;
         DynamicBodyCM dynamicBodyCM = Vars.ecs.getMapper(DynamicBodyCM.class).create(entity);
-        dynamicBodyCM.type = this;
+        TypeCM typeCM = Vars.ecs.getMapper(TypeCM.class).create(entity);
+        typeCM.blockType = this;
         assert (MathUtils.isEqual(size * 4, MathUtils.round(size * 4)));
         Vars.ecs.getMapper(TransformCM.class).get(entity).transform.set(transform);
         dynamicBodyCM.bodyId = shape.buildShape(transform, this);
@@ -150,9 +152,9 @@ public abstract class Block {
 
     public Array<Pair<Item, Integer>> costs = new Array<>();
 
-    public void cost(Item item, int count) {
-        costs.add(Pair.of(item, count));
-    }
+//    public void cost(Item item, int count) {
+//        costs.add(Pair.of(item, count));
+//    }
 
 }
 

@@ -31,8 +31,8 @@ public abstract class RevoluteBlock extends ComposedBlock {
     }
 
     @Override
-    void interOtherSetting() {
-        super.interOtherSetting();
+    void otherSetting() {
+        super.otherSetting();
     }
 
     @Override

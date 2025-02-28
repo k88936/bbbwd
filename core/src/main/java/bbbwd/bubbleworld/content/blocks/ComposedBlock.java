@@ -1,7 +1,7 @@
 package bbbwd.bubbleworld.content.blocks;
 
 import bbbwd.bubbleworld.Vars;
-import bbbwd.bubbleworld.core.Renderer;
+import bbbwd.bubbleworld.core.render.SimpleRenderLogic;
 import bbbwd.bubbleworld.game.components.logic.DeviceCM;
 import bbbwd.bubbleworld.game.components.physics.JointCM;
 import bbbwd.bubbleworld.game.systems.device.JointDeviceUpdateSystem;
@@ -37,12 +37,12 @@ public abstract class ComposedBlock extends Block {
     }
 
     @Override
-    void interOtherSetting() {
+    void otherSetting() {
 
-        super.interOtherSetting();
+        super.otherSetting();
         A.size = size;
         B.size = size;
-        renderLogic = new Renderer.SimpleRenderLogic(A.renderLogic, B.renderLogic);
+        renderLogic = new SimpleRenderLogic(A.renderLogic, B.renderLogic);
     }
 
     @Override
