@@ -2,6 +2,9 @@ package bbbwd.bubbleworld.core.render;
 
 import batchs.NormalBatch;
 import bbbwd.bubbleworld.Vars;
+import bbbwd.bubbleworld.core.render.liquid.LiquidBlurShader;
+import bbbwd.bubbleworld.core.render.liquid.LiquidNormalComputeShader;
+import bbbwd.bubbleworld.core.render.liquid.LiquidSpriteShader;
 import bbbwd.bubbleworld.game.components.DrawableCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
 import bbbwd.bubbleworld.game.systems.physics.PhysicsSystem;
@@ -34,25 +37,24 @@ public class Renderer {
     private final OrthographicCamera camera;
     private final Viewport viewport;
     private final NormalBatch normalBatch;
+    private final Batch batch;
+    private final ScreenDrawer screenDrawer;
+    private final Affine2 tmp = new Affine2();
     BitmapFont font;
     /** our ground box **/
     RayHandler rayHandler;
     /** our box2D world **/
     FrameBuffer normalFbo;
     FrameBuffer liquidFbo;
-    FrameBuffer liquidProcessedFbo;
+    FrameBuffer liquidViceFbo;
     FrameBuffer liquidNormalFbo;
     ShaderProgram lightShader;
     ShaderProgram liquidShader;
     PointLight pointLight;
-    private final Batch batch;
-    private final ScreenDrawer screenDrawer;
-
     Map<Layer, IntArray> drawables = new EnumMap<>(Layer.class);
+    private final ShaderProgram liquidNormalShader;
+    private final ShaderProgram liquidSpriteShader;
 
-    Texture drop = new Texture(Gdx.files.internal("adjusted_drop.png"));
-    private ShaderProgram liquidNormalShader;
-    private ShaderProgram liquidSpriteShader;
 
     public Renderer() {
 
@@ -74,8 +76,13 @@ public class Renderer {
 
         /* BOX2D LIGHT STUFF BEGIN */
         lightShader = LightShaderWithNormal.createLightShader();
-        liquidShader = LiquidShader.createLiquidShader();
-        liquidNormalShader = LiquidNormalShader.createLiquidNormalShader();
+        liquidShader = LiquidBlurShader.createLiquidBlurShader();
+        int kernel_size = 9;
+        float[] kernel = createGaussianKernel(kernel_size, 8);
+        liquidShader.bind();
+        liquidShader.setUniformi("u_range", kernel_size);
+        liquidShader.setUniform1fv("u_kernel", kernel, 0, kernel.length);
+        liquidNormalShader = LiquidNormalComputeShader.createLiquidNormalComputeShader();
         liquidSpriteShader = LiquidSpriteShader.createLiquidSpriteShader();
         RayHandlerOptions options = new RayHandlerOptions();
         options.setDiffuse(true);
@@ -84,11 +91,8 @@ public class Renderer {
             @Override
             protected void updateLightShader() {
                 lightShader.setUniformi("u_normals", 1);
-//                lightShader.setUniformf("u_resolution", 320, 240);
                 lightShader.setUniformf("u_resolution", viewport.getScreenWidth(), viewport.getScreenHeight());
                 lightShader.setUniformf("u_world", viewport.getWorldWidth(), viewport.getWorldHeight());
-//                Gdx.app.log("LightShader", "u_resolution: " + viewport.getScreenWidth() + " " + viewport.getScreenHeight());
-//                Gdx.app.log("LightShader", "u_world: " + viewport.getWorldWidth() + " " + viewport.getWorldHeight());
             }
 
             @Override
@@ -114,6 +118,23 @@ public class Renderer {
 //        DirectionalLight directionalLight = new DirectionalLight(rayHandler, 128, Color.WHITE, 45);
     }
 
+    public static float[] createGaussianKernel(int radius, float sigma) {
+        int size = 2 * radius + 1;
+        float[] kernel = new float[size];
+        float sum = 0;
+        int index = 0;
+        for (int i = -radius; i <= radius; i++) {
+            kernel[index] = (float) (Math.exp(-i * i / (2 * sigma * sigma)) / (Math.sqrt(2 * Math.PI) * sigma));
+            sum += kernel[index];
+            index++;
+        }
+        // 归一化核
+        for (int i = 0; i < kernel.length; i++) {
+            kernel[i] /= sum;
+        }
+
+        return kernel;
+    }
 
     public void render() {
         float cameraX = camera.position.x;
@@ -122,18 +143,13 @@ public class Renderer {
         float halfHeight = getViewport().getWorldHeight() / 2.0f;
         drawables.values().forEach(IntArray::clear);
         PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
-        Box2dPlus.b2WorldOverlapAABBbyEntity(physicsSystem.getWorldId(), cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight,ALL, new Box2dPlus.EntityCallback() {
-            @Override
-            public boolean b2OverlapResultFcn_call(long entity) {
-                int entityId = (int) entity;
-                DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entityId);
-                drawables.get(drawable.renderLogic.layer).add(entityId);
-                return true;
-            }
+        Box2dPlus.b2WorldOverlapAABBbyEntity(physicsSystem.getWorldId(), cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight, ALL, entity -> {
+            int entityId = (int) entity;
+            DrawableCM drawable = Vars.ecs.getMapper(DrawableCM.class).get(entityId);
+            drawables.get(drawable.renderLogic.layer).add(entityId);
+            return true;
         });
         getViewport().apply();
-
-//        if(true) return;
 
 
         batch.setProjectionMatrix(camera.combined);
@@ -144,35 +160,37 @@ public class Renderer {
         batch.begin();
         batch.enableBlending();
         batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE);
-
-
         batch.setColor(Color.ORANGE);
         renderSprite(drawables.get(Layer.LIQUID));
-
         batch.end();
         liquidFbo.end();
         Texture liquid = liquidFbo.getColorBufferTexture();
 //
 
         liquidShader.bind();
-        liquidShader.setUniformf("u_resolution",viewport.getScreenWidth(), viewport.getScreenHeight());
-        int kernel_size = 9;
-        float[] kernel = createGaussianKernel(kernel_size, 8);
-        liquidShader.setUniformi("u_range", kernel_size);
-        liquidShader.setUniform1fv("u_kernel", kernel, 0, kernel.length);
-
+        liquidShader.setUniformf("u_resolution", viewport.getScreenWidth(), viewport.getScreenHeight());
+        liquidShader.setUniformi("u_step", 0);
         screenDrawer.setShader(liquidShader);
         screenDrawer.disableBlending();
-        liquidProcessedFbo.begin();
+        liquidViceFbo.begin();
         Gdx.gl20.glClearColor(0, 0, 0, 0);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         screenDrawer.begin();
         screenDrawer.drawScreen(liquid);
         screenDrawer.end();
-        liquidProcessedFbo.end();
+        liquidViceFbo.end();
+        liquid = liquidViceFbo.getColorBufferTexture();
 
-        Texture liquidProcessedTexture = liquidProcessedFbo.getColorBufferTexture();
-
+        liquidShader.setUniformi("u_step", 1);
+        screenDrawer.setShader(liquidShader);
+        liquidFbo.begin();
+        Gdx.gl20.glClearColor(0, 0, 0, 0);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        screenDrawer.begin();
+        screenDrawer.drawScreen(liquid);
+        screenDrawer.end();
+        liquidFbo.end();
+        Texture liquidProcessedTexture = liquidFbo.getColorBufferTexture();
 
 
         normalFbo.begin();
@@ -185,7 +203,7 @@ public class Renderer {
         renderNormal(drawables.get(Layer.BLOCK_LOWER));
         renderNormal(drawables.get(Layer.BLOCK_UPPER));
         normalBatch.end();
-//
+
         liquidNormalShader.bind();
         liquidNormalShader.setUniformf("u_resolution", viewport.getScreenWidth(), viewport.getScreenHeight());
         liquidNormalShader.setUniformf("u_world", viewport.getWorldWidth(), viewport.getWorldHeight());
@@ -203,8 +221,6 @@ public class Renderer {
         renderNormal(drawables.get(Layer.TOP));
         normalBatch.end();
         normalFbo.end();
-
-
 
 
 //        if(true) return;
@@ -236,38 +252,11 @@ public class Renderer {
         renderSprite(drawables.get(Layer.EFFECT));
         renderSprite(drawables.get(Layer.TOP));
         batch.end();
-        /** BOX2D LIGHT STUFF BEGIN */
+
         rayHandler.setCombinedMatrix(camera);
         rayHandler.update();
         normals.bind(1);
         rayHandler.render();
-        /** BOX2D LIGHT STUFF END */
-
-    }
-
-    private final Affine2 tmp = new Affine2();
-
-    public static float[] createGaussianKernel(int radius, float sigma) {
-        int size = 2 * radius + 1;
-        float[] kernel = new float[size * size];
-        float sum = 0;
-        int index = 0;
-
-        for (int y = -radius; y <= radius; y++) {
-            for (int x = -radius; x <= radius; x++) {
-                float value = (float) (Math.exp(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * Math.PI * sigma * sigma));
-                kernel[index] = value;
-                sum += value;
-                index++;
-            }
-        }
-
-        // 归一化核
-        for (int i = 0; i < kernel.length; i++) {
-            kernel[i] /= sum;
-        }
-
-        return kernel;
     }
 
     private void renderSprite(IntArray entityList) {
@@ -308,14 +297,11 @@ public class Renderer {
         if (normalFbo != null) normalFbo.dispose();
         if (liquidFbo != null) liquidFbo.dispose();
         if (liquidNormalFbo != null) liquidNormalFbo.dispose();
-        if (liquidProcessedFbo != null) liquidProcessedFbo.dispose();
+        if (liquidViceFbo != null) liquidViceFbo.dispose();
         normalFbo = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
-        liquidFbo = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
-        liquidProcessedFbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        liquidFbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        liquidViceFbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         liquidNormalFbo = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
-//        lightShader.setUniformf("u_resolution", width, height);
-//        System.out.println(width);
-//        System.out.println(height);
     }
 
     public Viewport getViewport() {

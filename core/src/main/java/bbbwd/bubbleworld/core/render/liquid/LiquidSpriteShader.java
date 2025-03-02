@@ -1,10 +1,10 @@
-package bbbwd.bubbleworld.core.render;
+package bbbwd.bubbleworld.core.render.liquid;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
-public class LiquidNormalShader {
-    public static ShaderProgram createLiquidNormalShader() {
+public class LiquidSpriteShader {
+      public static ShaderProgram createLiquidSpriteShader() {
         String vertexShader =
                 "#version 330 core\n" +
                         "attribute vec4 " + ShaderProgram.POSITION_ATTRIBUTE + ";\n" +
@@ -22,19 +22,11 @@ public class LiquidNormalShader {
                 "#version 330 core\n" +
                         "varying vec2 v_texCoords;\n" +
                         "uniform sampler2D u_texture;\n" +
-                        "uniform vec2 u_resolution;\n" +
-                        "uniform vec2 u_world;\n" +
                         "void main() {\n" +
-//                        "    gl_FragColor = texture(u_texture, v_texCoords);\n" +
-                        "    float height = texture(u_texture, v_texCoords).a;\n" +
-                        "    if(height<=0)discard;\n" +
-                        "    float dHeightX = dFdx(height);\n" +
-                        "    float dHeightY = dFdy(height);\n" +
-//                        "    vec2 v=-vec2(dHeightX,dHeightY);\n" +
-                        "    vec2 v=-1324*vec2(dHeightX,dHeightY)*u_world/u_resolution;\n" +
-                        "    vec3 normal = normalize(vec3(v.x,v.y, 1));\n" +
-                        "    gl_FragColor = vec4(normal*0.5+0.5, 0.9);\n" +
-//                        "    gl_FragColor = vec4(height,height,height, 1.0);"+
+                        "    vec4 rgba = texture(u_texture, v_texCoords);\n" +
+                        "    rgba.a *= 1.5;"+
+                        "   rgba*=4;"+
+                        "    gl_FragColor = vec4(rgba);"+
                         "}";
 
         ShaderProgram shader = new ShaderProgram(vertexShader, fragmentShader);

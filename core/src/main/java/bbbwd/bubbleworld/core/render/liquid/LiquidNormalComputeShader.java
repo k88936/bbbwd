@@ -1,10 +1,10 @@
-package bbbwd.bubbleworld.core.render;
+package bbbwd.bubbleworld.core.render.liquid;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
-public class LiquidShader {
-    public static ShaderProgram createLiquidShader() {
+public class LiquidNormalComputeShader {
+    public static ShaderProgram createLiquidNormalComputeShader() {
         String vertexShader =
                 "#version 330 core\n" +
                         "attribute vec4 " + ShaderProgram.POSITION_ATTRIBUTE + ";\n" +
@@ -23,25 +23,18 @@ public class LiquidShader {
                         "varying vec2 v_texCoords;\n" +
                         "uniform sampler2D u_texture;\n" +
                         "uniform vec2 u_resolution;\n" +
-                        "uniform int u_range;\n" +
-                        "uniform float u_kernel[19*19];\n" +
-                        "const float threshold = 0.0;\n" +
+                        "uniform vec2 u_world;\n" +
                         "void main() {\n" +
-                        "   vec3 sum = vec3(0.0);\n" +
-                        "   vec2 texelSize = 1.0 / u_resolution;\n" +
-                        "   int k = 0;\n" +
-                        "   for(int y = -u_range; y <= u_range; ++y) {\n" +
-                        "       for(int x = -u_range; x <= u_range; ++x) {\n" +
-                        "           vec2 offset = vec2(texelSize.x * x, texelSize.y * y);\n" +
-                        "           vec3 sample = texture(u_texture, v_texCoords+ offset).rgb;\n" +
-                        "           sum += u_kernel[k++] * sample;\n" +
-                        "       }\n" +
-                        "   }\n" +
-                        "   sum-=threshold;"+
-                        "   sum/=1-threshold;"+
-                        "   float gray = dot(sum, vec3(0.299, 0.587, 0.114));\n" +
-//                        "float gray =( sum.x+sum.y+sum.z)/;\n"+
-                        "   gl_FragColor = vec4(sum,gray);\n" +
+//                        "    gl_FragColor = texture(u_texture, v_texCoords);\n" +
+                        "    float height = texture(u_texture, v_texCoords).a;\n" +
+                        "    if(height<=0)discard;\n" +
+                        "    float dHeightX = dFdx(height);\n" +
+                        "    float dHeightY = dFdy(height);\n" +
+//                        "    vec2 v=-vec2(dHeightX,dHeightY);\n" +
+                        "    vec2 v=-1324*vec2(dHeightX,dHeightY)*u_world/u_resolution;\n" +
+                        "    vec3 normal = normalize(vec3(v.x,v.y, 1));\n" +
+                        "    gl_FragColor = vec4(normal*0.5+0.5, 0.9);\n" +
+//                        "    gl_FragColor = vec4(height,height,height, 1.0);"+
                         "}";
 
         ShaderProgram shader = new ShaderProgram(vertexShader, fragmentShader);
@@ -50,5 +43,4 @@ public class LiquidShader {
         }
         return shader;
     }
-
 }
