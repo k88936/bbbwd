@@ -17,6 +17,7 @@ import com.badlogic.gdx.box2d.structs.b2WorldId;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
+import jdk.jfr.ContentType;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -30,6 +31,8 @@ public abstract class InputHandler implements InputProcessor, Disposable {
      * @return null if no place to build
      */
 
+    private final static Box2dPlus.ContactFilter seekBuildFilter = new Box2dPlus.ContactFilter(0, PhysicsSystem.CollisionType.ALL.get(), PhysicsSystem.CollisionType.BLOCK.get());
+
     public SeekResult seekPlaceForBuild(Vector2 position, Block newBlock, int rot) {
         b2WorldId worldId = Vars.ecs.getSystem(PhysicsSystem.class).getWorldId();
 //        Viewport viewport = Vars.renderer.viewport;
@@ -40,7 +43,7 @@ public abstract class InputHandler implements InputProcessor, Disposable {
 
 
         //seek possible
-        Box2dPlus.b2WorldOverlapAABBbyEntity(worldId, position.x - extend, position.y - extend, position.x + extend, position.y + extend, new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(worldId, position.x - extend, position.y - extend, position.x + extend, position.y + extend, seekBuildFilter, new Box2dPlus.EntityCallback() {
             final b2Transform cache = new b2Transform();
 
             @Override

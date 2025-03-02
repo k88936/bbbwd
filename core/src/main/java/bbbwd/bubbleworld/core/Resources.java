@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.box2d.Box2dPlus;
 import com.badlogic.gdx.box2d.structs.b2Hull;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.JsonReader;
@@ -34,8 +35,12 @@ public class Resources {
         return assetManager;
     }
 
-    public TextureRegion getTexureRegion(String name) {
+    public TextureRegion getTexureRegionFromPack(String name) {
         return atlas.findRegion(name);
+    }
+
+    public TextureRegion getTexureRegion(String name) {
+        return new TextureRegion(new Texture(Gdx.files.internal(name)));
     }
 
     public b2Hull getHull(String name) {

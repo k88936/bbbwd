@@ -19,6 +19,8 @@ public abstract class Liquid {
     static final float defaultDensity = 0.5f;
 //    static final float defaultViscosity = 0.5f;
 
+    public static final Box2dPlus.ContactFilter defaultContactFilter = new Box2dPlus.ContactFilter(0, PhysicsSystem.CollisionType.LIQUID.get(),
+            PhysicsSystem.CollisionType.SOLID.get() | PhysicsSystem.CollisionType.BLOCK.get() | PhysicsSystem.CollisionType.LIQUID.get());
 
     public float size;
     public LiquidRenderLogic renderLogic;
@@ -48,7 +50,7 @@ public abstract class Liquid {
         typeCM.liquidType = this;
         assert (MathUtils.isEqual(size * 4, MathUtils.round(size * 4)));
         Vars.ecs.getMapper(TransformCM.class).get(entity).transform.set(transform);
-        dynamicBodyCM.bodyId = Box2dPlus.b2CreateCircle(Vars.ecs.getSystem(PhysicsSystem.class).getWorldId(), transform, size);
+        dynamicBodyCM.bodyId = Box2dPlus.b2CreateCircle(Vars.ecs.getSystem(PhysicsSystem.class).getWorldId(), transform, size,defaultContactFilter);
         Box2dPlus.b2BodySetRawUserData(dynamicBodyCM.bodyId, entity);
         return entity;
 
@@ -62,7 +64,7 @@ public abstract class Liquid {
             this.texture = texture;
         }
         public static LiquidRenderLogic of(final String name, float size) {
-            final TextureRegion texture = Vars.resources.getTexureRegion(name);
+            final TextureRegion texture = Vars.resources.getTexureRegionFromPack(name);
             return new LiquidRenderLogic(texture, size) {
             };
         }

@@ -51,7 +51,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     }
 
     public void collect(float lx, float ly, float ux, float uy, IntArray entities) {
-        Box2dPlus.b2WorldOverlapAABBbyEntity(getWorldId(), lx, ly, ux, uy, new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(getWorldId(), lx, ly, ux, uy, ALL, new Box2dPlus.EntityCallback() {
 //            final b2Transform cache = new b2Transform();
 
             @Override
@@ -111,4 +111,24 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     public b2WorldId getWorldId() {
         return worldId;
     }
+
+    public static enum CollisionType {
+        BLOCK,
+        SOLID,
+        LIQUID,
+        GAS,
+
+        ALL {
+            @Override
+            public int get() {
+                return 0xffffffff;
+            }
+        };
+
+        public int get() {
+            return 2 << ordinal();
+        }
+    }
+
+    public static final Box2dPlus.ContactFilter ALL = new Box2dPlus.ContactFilter(0, CollisionType.ALL.get(), CollisionType.ALL.get());
 }

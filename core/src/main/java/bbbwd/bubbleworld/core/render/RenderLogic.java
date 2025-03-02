@@ -19,8 +19,8 @@ public abstract class RenderLogic {
     public abstract void renderNormal(Affine2 tfm, Batch bth);
 
     public static RenderLogic of(final String name, Renderer.Layer layer, float size) {
-        final TextureRegion texture = Vars.resources.getTexureRegion(name);
-        final TextureRegion normal = Vars.resources.getTexureRegion(name + ".normal");
+        final TextureRegion texture = Vars.resources.getTexureRegionFromPack(name);
+        final TextureRegion normal = Vars.resources.getTexureRegionFromPack(name + ".normal");
         return new RenderLogic(layer, size) {
             @Override
             public void render(Affine2 tfm, Batch bth) {

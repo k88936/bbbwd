@@ -14,10 +14,10 @@ public class FakeResources extends Resources {
 
     @Override
     public void load() {
-        String root="../assets/";
+        String root = "../assets/";
         String workingDir = System.getProperty("user.dir");
         File dir = new File(workingDir);
-        JsonValue polygonsVertices = jsonReader.parse(new FileHandle(root+"packed/polygons.json"));
+        JsonValue polygonsVertices = jsonReader.parse(new FileHandle(root + "packed/polygons.json"));
         JsonValue polygons = polygonsVertices.get("polygons");
         for (JsonValue polygon : polygons) {
 
@@ -31,9 +31,12 @@ public class FakeResources extends Resources {
     }
 
     @Override
-    public TextureRegion getTexureRegion(String name) {
+    public TextureRegion getTexureRegionFromPack(String name) {
         return null;
     }
 
-
+    @Override
+    public TextureRegion getTexureRegion(String name) {
+        return null;
+    }
 }

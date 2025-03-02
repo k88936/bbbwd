@@ -28,6 +28,8 @@ import shaders.LightShaderWithNormal;
 import java.util.EnumMap;
 import java.util.Map;
 
+import static bbbwd.bubbleworld.game.systems.physics.PhysicsSystem.ALL;
+
 public class Renderer {
     private final OrthographicCamera camera;
     private final Viewport viewport;
@@ -120,7 +122,7 @@ public class Renderer {
         float halfHeight = getViewport().getWorldHeight() / 2.0f;
         drawables.values().forEach(IntArray::clear);
         PhysicsSystem physicsSystem = Vars.ecs.getSystem(PhysicsSystem.class);
-        Box2dPlus.b2WorldOverlapAABBbyEntity(physicsSystem.getWorldId(), cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight, new Box2dPlus.EntityCallback() {
+        Box2dPlus.b2WorldOverlapAABBbyEntity(physicsSystem.getWorldId(), cameraX - halfWidth, cameraY - halfHeight, cameraX + halfWidth, cameraY + halfHeight,ALL, new Box2dPlus.EntityCallback() {
             @Override
             public boolean b2OverlapResultFcn_call(long entity) {
                 int entityId = (int) entity;
