@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Test;
 public class ProcessorTest {
     @Test
     public void test() {
-        Tools.init();
+        TestTools.init();
         int entity = Vars.ecs.create();
 
         ExecutorCm logic = Vars.ecs.getMapper(ExecutorCm.class).create(entity);
 
         logic.load(LAssembler.assemble("read x 1 2"));
-        Tools.step();
+        TestTools.step();
 
         assert logic.instructions.length == 1;
         assert logic.counter.getNumVal() == 1;
@@ -24,7 +24,7 @@ public class ProcessorTest {
 
         logic.devices[1] = entity;
 
-        Tools.step();
+        TestTools.step();
         assert logic.vars.get(1).getNumVal() == 1;
 
     }

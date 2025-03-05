@@ -1,108 +1,112 @@
 buildscript {
-  repositories {
-    mavenCentral()
-    maven { url 'https://s01.oss.sonatype.org' }
-    gradlePluginPortal()
-    mavenLocal()
-    google()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-  }
-  dependencies {
-    classpath "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+    repositories {
+        mavenCentral()
+        maven { url 'https://s01.oss.sonatype.org' }
+        gradlePluginPortal()
+        mavenLocal()
+        google()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    }
+    dependencies {
+        classpath "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
 
-  }
+    }
 }
 
 tasks.register('genAssets', Exec) {
-  workingDir ="assets_raw"
-  commandLine 'make'
+    workingDir = "assets_raw"
+    commandLine 'make'
 
 }
 // Store the parameters you want to pass the texturePacker here...
-project.ext.texturePacker = [ "assets_gen", "assets/packed", "assets.atlas" ]
+project.ext.texturePacker = ["assets_gen", "assets/packed", "assets.atlas"]
 
 // Import the texture packer
 import com.badlogic.gdx.tools.texturepacker.TexturePacker
 
 // Add a new task that packs the textures for you
 tasks.register('texturePacker') {
-  doLast {
-    if (project.ext.has('texturePacker')) {
-      logger.info "Calling TexturePacker: " + texturePacker
-      TexturePacker.process(texturePacker[0], texturePacker[1], texturePacker[2])
+    doLast {
+        if (project.ext.has('texturePacker')) {
+            logger.info "Calling TexturePacker: " + texturePacker
+            TexturePacker.process(texturePacker[0], texturePacker[1], texturePacker[2])
+        }
     }
-  }
 }
 
 allprojects {
-  apply plugin: 'eclipse'
-  apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
 
-  // This allows you to "Build and run using IntelliJ IDEA", an option in IDEA's Settings.
-  idea {
-    module {
-      outputDir file('build/classes/java/main')
-      testOutputDir file('build/classes/java/test')
+    configurations.configureEach {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     }
-  }
+
+    // This allows you to "Build and run using IntelliJ IDEA", an option in IDEA's Settings.
+    idea {
+        module {
+            outputDir file('build/classes/java/main')
+            testOutputDir file('build/classes/java/test')
+        }
+    }
 }
 
 configure(subprojects) {
-  apply plugin: 'java-library'
-  sourceCompatibility = 21
+    apply plugin: 'java-library'
+    sourceCompatibility = 21
 
-  // From https://lyze.dev/2021/04/29/libGDX-Internal-Assets-List/
-  // The article can be helpful when using assets.txt in your project.
-  tasks.register('generateAssetList') {
-    inputs.dir("${project.rootDir}/assets/")
-    // projectFolder/assets
-    File assetsFolder = new File("${project.rootDir}/assets/")
-    // projectFolder/assets/assets.txt
-    File assetsFile = new File(assetsFolder, "assets.txt")
-    // delete that file in case we've already created it
-    assetsFile.delete()
+    // From https://lyze.dev/2021/04/29/libGDX-Internal-Assets-List/
+    // The article can be helpful when using assets.txt in your project.
+    tasks.register('generateAssetList') {
+        inputs.dir("${project.rootDir}/assets/")
+        // projectFolder/assets
+        File assetsFolder = new File("${project.rootDir}/assets/")
+        // projectFolder/assets/assets.txt
+        File assetsFile = new File(assetsFolder, "assets.txt")
+        // delete that file in case we've already created it
+        assetsFile.delete()
 
-    // iterate through all files inside that folder
-    // convert it to a relative path
-    // and append it to the file assets.txt
-    fileTree(assetsFolder).collect { assetsFolder.relativePath(it) }.sort().each {
-      assetsFile.append(it + "\n")
+        // iterate through all files inside that folder
+        // convert it to a relative path
+        // and append it to the file assets.txt
+        fileTree(assetsFolder).collect { assetsFolder.relativePath(it) }.sort().each {
+            assetsFile.append(it + "\n")
+        }
     }
-  }
-  processResources.dependsOn 'generateAssetList'
+    processResources.dependsOn 'generateAssetList'
 
-  compileJava {
-    options.incremental = true
-  }
+    compileJava {
+        options.incremental = true
+    }
 }
 
 subprojects {
-  version = '$projectVersion'
-  ext.appName = 'BubbleWorld'
-  repositories {
-    mavenCentral()
-    maven { url 'https://s01.oss.sonatype.org' }
-    mavenLocal()
-    maven {
-      url = "https://maven.pkg.github.com/k88936/box2dlights"
-      credentials {
-        username = 'k88936'
-        password = 'ghp_' + 'wFUC3mQHU8OqQtjcjfRWwwcpC4wiR54cd3FV'
-      }
-    }
-    maven {
-      url = "https://maven.pkg.github.com/k88936/gdx-box2d"
-      credentials {
-        username = 'k88936'
-        password = 'ghp_' + 'wFUC3mQHU8OqQtjcjfRWwwcpC4wiR54cd3FV'
-      }
-    }
+    version = '$projectVersion'
+    ext.appName = 'BubbleWorld'
+    repositories {
+        mavenCentral()
+        maven { url 'https://s01.oss.sonatype.org' }
+        mavenLocal()
+        maven {
+            url = "https://maven.pkg.github.com/k88936/box2dlights"
+            credentials {
+                username = 'k88936'
+                password = 'ghp_' + 'wFUC3mQHU8OqQtjcjfRWwwcpC4wiR54cd3FV'
+            }
+        }
+        maven {
+            url = "https://maven.pkg.github.com/k88936/gdx-box2d"
+            credentials {
+                username = 'k88936'
+                password = 'ghp_' + 'wFUC3mQHU8OqQtjcjfRWwwcpC4wiR54cd3FV'
+            }
+        }
 
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://jitpack.io' }
-  }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://jitpack.io' }
+    }
 }
 
 eclipse.project.name = 'BubbleWorld' + '-parent'

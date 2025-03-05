@@ -12,7 +12,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.box2d.Box2d;
 import com.badlogic.gdx.math.Affine2;
 
-public class Tools {
+public class TestTools {
     public static PhysicsSystem physicsSystem;
     public static LogicSystem logicSystem;
     public static InputHandler inputHandler = new FakeInputHandler();
