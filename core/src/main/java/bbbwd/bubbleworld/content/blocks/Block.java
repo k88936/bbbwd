@@ -26,7 +26,9 @@ public abstract class Block {
     public static final float defaultSize = 0.5f;
     public static final ConnectFilter defaultConnectionFilter = (newBlock, ry, oldBlock, rx) -> true;
     public static final ContactFilter defaultContactFilter = new ContactFilter(0, PhysicsSystem.CollisionType.BLOCK.get(),
-            PhysicsSystem.CollisionType.SOLID.get() | PhysicsSystem.CollisionType.BLOCK.get() | PhysicsSystem.CollisionType.LIQUID.get());
+        PhysicsSystem.CollisionType.SOLID.get() | PhysicsSystem.CollisionType.BLOCK.get() | PhysicsSystem.CollisionType.LIQUID.get()
+            | PhysicsSystem.CollisionType.LIGHT.get()
+    );
     public static final Shape ShapeBox = new Shape() {
         @Override
         public b2BodyId buildShape(Affine2 transform, Block block) {
@@ -56,6 +58,20 @@ public abstract class Block {
         }
     };
     public static RenderLogic defaultRenderLogic;
+    public float size;
+    //endregion
+    public Shape shape = ShapeBox;
+    public ConnectFilter connectFilter;
+    public RenderLogic renderLogic;
+    public b2Hull hull;
+    public BlockType blockType = null;
+    public Array<Pair<Item, Integer>> costs = new Array<>();
+
+
+    Block() {
+        setupDefault();
+        otherSetting();
+    }
 
     public Shape ShapePolygon(String id) {
         hull = Vars.resources.getHull(id);
@@ -74,19 +90,6 @@ public abstract class Block {
             }
         };
     }
-    //endregion
-
-    public float size;
-    public Shape shape = ShapeBox;
-    public ConnectFilter connectFilter;
-    public RenderLogic renderLogic;
-    public b2Hull hull;
-
-    Block() {
-        setupDefault();
-        otherSetting();
-    }
-
 
     void setupDefault() {
         connectFilter = defaultConnectionFilter;
@@ -116,17 +119,13 @@ public abstract class Block {
         return entity;
     }
 
+    public enum BlockType {
+        basic, motor, sensor, logic;
+    }
+
     public interface ConnectFilter {
         ConnectFilter always = (thisBlock, newBlock, rx, ry) -> false;
         ConnectFilter never = (thisBlock, newBlock, rx, ry) -> true;
-
-        /**
-         * @param newBlock
-         * @param rx       newBlock relative to thisBlock
-         * @param ry       newBlock relative to thisBlock
-         * @return ture to pass(CANNOT connect)
-         */
-        boolean filterOut(Block thisBlock, Block newBlock, float rx, float ry);
 
         static ConnectFilter allow(boolean left, boolean right, boolean top, boolean bottom) {
             return (thisBlock, newBlock, rx, ry) -> {
@@ -137,6 +136,14 @@ public abstract class Block {
                 return true;
             };
         }
+
+        /**
+         * @param newBlock
+         * @param rx       newBlock relative to thisBlock
+         * @param ry       newBlock relative to thisBlock
+         * @return ture to pass(CANNOT connect)
+         */
+        boolean filterOut(Block thisBlock, Block newBlock, float rx, float ry);
     }
 
     public interface Shape {
@@ -148,14 +155,6 @@ public abstract class Block {
 
         void overlap(Block block, float tolerance, Affine2 transform, Box2dPlus.EntityCallback callback);
     }
-
-    public enum BlockType {
-        basic, motor, sensor, logic;
-    }
-
-    public BlockType blockType = null;
-
-    public Array<Pair<Item, Integer>> costs = new Array<>();
 
 //    public void cost(Item item, int count) {
 //        costs.add(Pair.of(item, count));
