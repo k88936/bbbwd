@@ -15,13 +15,14 @@ import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.MathUtils;
 
 public abstract class Liquid {
+    public static final Box2dPlus.ContactFilter defaultContactFilter = new Box2dPlus.ContactFilter(0,
+        PhysicsSystem.CollisionType.LIQUID.get(),
+        PhysicsSystem.CollisionType.SOLID.get() | PhysicsSystem.CollisionType.BLOCK.get() | PhysicsSystem.CollisionType.LIQUID.get()
+            | PhysicsSystem.CollisionType.LIGHT.get()
+    );
     static final float defaultSize = 0.125f;
-    static final float defaultDensity = 0.5f;
 //    static final float defaultViscosity = 0.5f;
-
-    public static final Box2dPlus.ContactFilter defaultContactFilter = new Box2dPlus.ContactFilter(0, PhysicsSystem.CollisionType.LIQUID.get(),
-            PhysicsSystem.CollisionType.SOLID.get() | PhysicsSystem.CollisionType.BLOCK.get() | PhysicsSystem.CollisionType.LIQUID.get());
-
+    static final float defaultDensity = 0.5f;
     public float size;
     public LiquidRenderLogic renderLogic;
 
@@ -50,7 +51,7 @@ public abstract class Liquid {
         typeCM.liquidType = this;
         assert (MathUtils.isEqual(size * 4, MathUtils.round(size * 4)));
         Vars.ecs.getMapper(TransformCM.class).get(entity).transform.set(transform);
-        dynamicBodyCM.bodyId = Box2dPlus.b2CreateCircle(Vars.ecs.getSystem(PhysicsSystem.class).getWorldId(), transform, size,defaultContactFilter);
+        dynamicBodyCM.bodyId = Box2dPlus.b2CreateCircle(Vars.ecs.getSystem(PhysicsSystem.class).getWorldId(), transform, size * 0.5f, defaultContactFilter);
         Box2dPlus.b2BodySetRawUserData(dynamicBodyCM.bodyId, entity);
         return entity;
 
@@ -59,10 +60,11 @@ public abstract class Liquid {
     public static class LiquidRenderLogic extends RenderLogic {
         private final TextureRegion texture;
 
-        LiquidRenderLogic( TextureRegion texture,float size) {
+        LiquidRenderLogic(TextureRegion texture, float size) {
             super(Renderer.Layer.LIQUID, size);
             this.texture = texture;
         }
+
         public static LiquidRenderLogic of(final String name, float size) {
             final TextureRegion texture = Vars.resources.getTexureRegionFromPack(name);
             return new LiquidRenderLogic(texture, size) {

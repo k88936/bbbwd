@@ -1,7 +1,7 @@
 package bbbwd.bubbleworld.game.systems.physics;
 
-import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import bbbwd.bubbleworld.game.components.TransformCM;
+import bbbwd.bubbleworld.game.components.physics.DynamicBodyCM;
 import com.artemis.BaseEntitySystem;
 import com.artemis.ComponentMapper;
 import com.artemis.annotations.All;
@@ -20,12 +20,13 @@ import java.util.Arrays;
 
 @All({TransformCM.class, DynamicBodyCM.class})
 public class PhysicsSystem extends BaseEntitySystem implements Disposable {
+    public static final Box2dPlus.ContactFilter ALL = new Box2dPlus.ContactFilter(0, CollisionType.ALL.get(), CollisionType.ALL.get());
     private static final int workerCount = Runtime.getRuntime().availableProcessors();
     private final b2WorldId worldId;
     private final Box2dWorldTaskSystem taskSystem;
     public ComponentMapper<TransformCM> transformMapper;
-    public ComponentMapper<DynamicBodyCM> boxMapper;
 //    public ComponentMapper<VisibleCM> visibleMapper;
+    public ComponentMapper<DynamicBodyCM> boxMapper;
 
     public PhysicsSystem() {
 
@@ -68,7 +69,6 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         });
     }
 
-
     public b2JointId connectByWeld(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB, float referenceAngle) {
         DynamicBodyCM boxA = boxMapper.get(entityA);
         DynamicBodyCM boxB = boxMapper.get(entityB);
@@ -76,12 +76,6 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
 //        Box2d.b2Joint_SetCollideConnected(b2JointId, false);
         return b2JointId;
 
-    }
-
-    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB) {
-        DynamicBodyCM boxA = boxMapper.get(entityA);
-        DynamicBodyCM boxB = boxMapper.get(entityB);
-        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB);
     }
 //    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 center, float limitLower, float limitUpper,float maxTorch) {
 //        DynamicBodyCM boxA = boxMapper.get(entityA);
@@ -97,6 +91,11 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
 
 //    public void createBody()
 
+    public b2JointId connectByRevolute(int entityA, int entityB, Vector2 localAnchorA, Vector2 localAnchorB) {
+        DynamicBodyCM boxA = boxMapper.get(entityA);
+        DynamicBodyCM boxB = boxMapper.get(entityB);
+        return Box2dPlus.b2ConnectBlockByRevoluteJoint(worldId, boxA.bodyId, boxB.bodyId, localAnchorA, localAnchorB);
+    }
 
     @Override
     public void dispose() {
@@ -113,6 +112,12 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
     }
 
     public static enum CollisionType {
+        LIGHT {
+            @Override
+            public int get() {
+                return 1;
+            }
+        },
         BLOCK,
         SOLID,
         LIQUID,
@@ -126,9 +131,7 @@ public class PhysicsSystem extends BaseEntitySystem implements Disposable {
         };
 
         public int get() {
-            return 2 << ordinal();
+            return 1 << ordinal();
         }
     }
-
-    public static final Box2dPlus.ContactFilter ALL = new Box2dPlus.ContactFilter(0, CollisionType.ALL.get(), CollisionType.ALL.get());
 }

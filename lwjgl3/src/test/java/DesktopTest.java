@@ -37,7 +37,13 @@ public class DesktopTest {
                 inputHandler.buildBlock(new Affine2().translate(-1, 1).rotate(10), Blocks.testBlock);
 //                Control.buildBlock(new Affine2().translate(- 3, 3).rotate(0), Blocks.saw);
 
-                Liquids.testLiquid.create(new Affine2().translate(2,0));
+                for (float i = 2; i < 5; i+=0.125f) {
+                    for(float j=0; j<3;j+=0.125f){
+
+                        Liquids.testLiquid.create(new Affine2().translate(i,j));
+                    }
+
+                }
 //                int x = Control.buildBlock(new Affine2().translate(2, 3), Blocks.testHingeBlock);
 //                JointCM jointCM = Vars.ecs.getMapper(JointCM.class).get(x);
 //                Box2d.b2Joint_SetCollideConnected(jointCM.jointId, false);
