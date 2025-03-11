@@ -23,8 +23,7 @@ public class Resources {
         assetManager.finishLoading();
         this.atlas = assetManager.get("packed/assets.atlas", TextureAtlas.class);
 
-        JsonValue polygonsVertices = jsonReader.parse(Gdx.files.internal("packed/polygons.json"));
-        JsonValue polygons = polygonsVertices.get("polygons");
+        JsonValue polygons = jsonReader.parse(Gdx.files.internal("packed/polygons.json"));
         for (JsonValue polygon : polygons) {
 
             polygonVerticesData.put(polygon.name(), Box2dPlus.b2ComputeHull(polygon.asFloatArray()));

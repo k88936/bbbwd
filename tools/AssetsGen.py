@@ -100,8 +100,7 @@ for root, dirs, files in os.walk(assets_input):
                           f"\t\t\t{{{','.join([str(x) for x in vertices])}}}\n")
                     with open(verticesDataOutputPath, "r") as verticesDataFile:
                         verticesData = json.loads(verticesDataFile.read())
-                    verticesDataRoot = verticesData["polygons"]
-                    verticesDataRoot[name] = vertices
+                    verticesData[name] = vertices
                     with open(verticesDataOutputPath, "w") as verticesDataFile:
                         json.dump(verticesData, verticesDataFile, indent=4)
 
