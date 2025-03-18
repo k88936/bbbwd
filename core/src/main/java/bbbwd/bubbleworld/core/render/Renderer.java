@@ -1,6 +1,6 @@
 package bbbwd.bubbleworld.core.render;
 
-import batchs.NormalBatch;
+import box2dLight.batchs.NormalBatch;
 import bbbwd.bubbleworld.Vars;
 import bbbwd.bubbleworld.core.render.liquid.LiquidBlurShader;
 import bbbwd.bubbleworld.core.render.liquid.LiquidNormalComputeShader;
